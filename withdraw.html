@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penarikan - RewardSharey</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0b0f1a; --card: #151c2c; --primary: #4a8d88; --text-dim: #94a3b8; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: white; padding-bottom: 100px; }
+
+        .top-title { padding: 30px 5% 10px; text-align: center; }
+        .top-title h2 { margin: 0; font-size: 20px; font-weight: 800; color: var(--primary); letter-spacing: 1px; }
+
+        .card-balance { margin: 15px 5%; padding: 25px; background: linear-gradient(135deg, #151c2c 0%, #0b0f1a 100%); border-radius: 24px; border: 1px solid rgba(74, 141, 136, 0.3); text-align: center; }
+        .card-balance small { color: var(--text-dim); font-size: 11px; text-transform: uppercase; }
+        .card-balance h1 { margin: 10px 0 0; font-size: 30px; color: white; }
+
+        .form-wd { padding: 0 6%; }
+        .input-box { margin-bottom: 15px; }
+        .input-box label { display: block; font-size: 11px; font-weight: 700; color: var(--text-dim); margin-bottom: 8px; margin-left: 5px; }
+        .input-box input, .input-box select { 
+            width: 100%; padding: 16px; background: var(--card); border: 1px solid #2d3748; 
+            border-radius: 15px; color: white; outline: none; box-sizing: border-box; font-family: inherit;
+        }
+
+        .btn-confirm { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 16px; color: white; font-weight: 800; cursor: pointer; margin-top: 10px; font-size: 14px; }
+
+        /* NAV BOTTOM TETAP */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: rgba(21, 28, 44, 0.98); display: flex; justify-content: space-around; padding: 12px 0 25px; backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.05); z-index: 1000; }
+        .nav-item { text-decoration: none; color: #94a3b8; text-align: center; flex: 1; }
+        .nav-item.active { color: #4a8d88; }
+        .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; }
+        .nav-item span { font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <div class="top-title">
+        <h2>PENARIKAN DANA</h2>
+    </div>
+
+    <div class="card-balance">
+        <small>Saldo Anda</small>
+        <h1 id="userBalance">Rp 0</h1>
+    </div>
+
+    <div class="form-wd">
+        <div class="input-box">
+            <label>PILIH METODE</label>
+            <select id="wdMethod"><option>DANA</option><option>OVO</option><option>GOPAY</option><option>BANK TRANSFER</option></select>
+        </div>
+        <div class="input-box">
+            <label>NAMA LENGKAP (SESUAI REKENING)</label>
+            <input type="text" id="wdName" placeholder="Masukkan nama pemilik">
+        </div>
+        <div class="input-box">
+            <label>NOMOR HP / REKENING</label>
+            <input type="number" id="wdTarget" placeholder="08xxxxxxxxxx">
+        </div>
+        <div class="input-box">
+            <label>NOMINAL (MIN RP 30.000)</label>
+            <input type="number" id="wdAmount" placeholder="Contoh: 30000">
+        </div>
+        <button class="btn-confirm" onclick="submitWD()">KIRIM PENARIKAN</button>
+    </div>
+    
+    <footer style="margin-top: 0.1px; padding: 30px 6%; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
+    
+    <div style="background: rgba(74, 141, 136, 0.1); border: 1px dashed var(--primary); padding: 15px; border-radius: 15px; margin-bottom: 30px; text-align: left;">
+        <h4 style="margin: 0 0 10px 0; font-size: 13px; color: var(--primary);"><i class="fa-solid fa-clock"></i> INFORMASI PENCAIRAN</h4>
+        <p style="margin: 0; font-size: 11px; color: var(--text-dim); line-height: 1.5;">
+            • Penarikan diproses setiap hari pukul 09.00 - 21.00 WIB.<br>
+            • Estimasi waktu masuk ke rekening adalah 1 - 24 jam.<br>
+            • Pastikan nomor rekening/e-wallet sudah sesuai. Kesalahan input bukan tanggung jawab kami.
+        </p>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 25px;">
+        <a href="tos.html" style="color: var(--primary); font-size: 11px; font-weight: 600; text-decoration: none; border: 1px solid rgba(74, 141, 136, 0.3); padding: 6px 12px; border-radius: 8px;">Syarat WD</a>
+        <a href="privacy.html" style="color: var(--primary); font-size: 11px; font-weight: 600; text-decoration: none; border: 1px solid rgba(74, 141, 136, 0.3); padding: 6px 12px; border-radius: 8px;">Kebijakan</a>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+        <img src="img/logo.jpg" style="width: 40px; border-radius: 10px; opacity: 0.8; filter: grayscale(50%);">
+    </div>
+    <p style="font-size: 10px; color: var(--text-dim); margin: 0;">
+        © 2025-2026 RewardSharey Group.
+    </p>
+    
+    <div style="height: 0.1px;"></div>
+</footer>
+
+    <nav class="nav-bar">
+        <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-house"></i><span>HOME</span></a>
+        <a href="withdraw.html" class="nav-item active"><i class="fa-solid fa-wallet"></i><span>PENARIKAN</span></a>
+        <a href="referral.html" class="nav-item"><i class="fa-solid fa-user-plus"></i><span>UNDANG</span></a>
+        <a href="profile.html" class="nav-item"><i class="fa-solid fa-circle-user"></i><span>PROFIL</span></a>
+    </nav>
+
+    <script type="module">
+        import { db, auth } from './js/firebase-config.js';
+        import { doc, onSnapshot, addDoc, collection, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let currentBalance = 0;
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                onSnapshot(doc(db, "users", user.uid), (s) => {
+                    if(s.exists()){
+                        currentBalance = s.data().balance || 0;
+                        document.getElementById('userBalance').innerText = "Rp " + currentBalance.toLocaleString();
+                    }
+                });
+            } else { window.location.href = "login.html"; }
+        });
+
+        window.submitWD = async () => {
+            const amount = parseInt(document.getElementById('wdAmount').value);
+            const name = document.getElementById('wdName').value;
+            const target = document.getElementById('wdTarget').value;
+            
+            if(!name || !target || !amount) return alert("Isi semua data!");
+            if(amount < 30000) return alert("Minimal Rp 30.000");
+            if(amount > currentBalance) return alert("Saldo tidak cukup!");
+
+            try {
+                await updateDoc(doc(db, "users", auth.currentUser.uid), { balance: increment(-amount) });
+                await addDoc(collection(db, "withdrawals"), {
+                    uid: auth.currentUser.uid,
+                    accountName: name,
+                    method: document.getElementById('wdMethod').value,
+                    target: target,
+                    amount: amount,
+                    status: "pending",
+                    timestamp: serverTimestamp()
+                });
+                alert("Berhasil! Penarikan sedang diproses.");
+                window.location.href = "history.html";
+            } catch(e) { alert("Error: " + e.message); }
+        }
+    </script>
+</body>
+</html>

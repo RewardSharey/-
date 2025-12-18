@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buat Tugas - RewardSharey</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0b0f1a; --card: #151c2c; --primary: #4a8d88; --text-dim: #94a3b8; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: white; }
+
+        .header { padding: 20px 5%; display: flex; align-items: center; gap: 15px; background: var(--card); border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 1000; }
+        .header a { color: white; text-decoration: none; width: 35px; height: 35px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+        .header h2 { margin: 0; font-size: 16px; font-weight: 800; }
+
+        .content { padding: 25px 6%; }
+
+        .investor-card { 
+            background: linear-gradient(135deg, rgba(74, 141, 136, 0.1) 0%, rgba(21, 28, 44, 1) 100%); 
+            padding: 20px; border-radius: 20px; border: 1px solid rgba(74, 141, 136, 0.2); margin-bottom: 25px; 
+        }
+        .investor-card h4 { margin: 0 0 5px; font-size: 14px; color: var(--primary); }
+        .investor-card p { margin: 0; font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+
+        .form-section { background: var(--card); padding: 20px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.03); }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 800; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; }
+        
+        .input-style { 
+            width: 100%; padding: 15px; background: #0b0f1a; border: 1px solid #2d3748; 
+            border-radius: 14px; color: white; box-sizing: border-box; outline: none; font-family: inherit; font-size: 13px;
+        }
+
+        .cost-summary { 
+            margin-top: 10px; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 14px; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .cost-summary span { font-size: 12px; color: var(--text-dim); }
+        .cost-summary b { font-size: 18px; color: var(--primary); }
+        .cost-summary small { display: block; font-size: 9px; color: #64748b; margin-top: 2px; }
+
+        .btn-publish { 
+            width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 16px; 
+            color: white; font-weight: 800; cursor: pointer; margin-top: 25px; font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="dashboard.html"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>BUAT TUGAS BARU</h2>
+    </div>
+
+    <div class="content" id="mainContent">
+        <div class="investor-card">
+            <h4>Advertiser Mode</h4>
+            <p>Promosikan link Anda ke ribuan member. Pastikan deskripsi jelas agar tugas disetujui Admin.</p>
+        </div>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label>Judul Tugas</label>
+                <input type="text" id="taskTitle" class="input-style" placeholder="Contoh: Subscribe YouTube">
+            </div>
+
+            <div class="form-group">
+                <label>Tautan / Link</label>
+                <input type="url" id="taskLink" class="input-style" placeholder="https://...">
+            </div>
+
+            <div class="form-group">
+                <label>Instruksi</label>
+                <textarea id="taskDesc" class="input-style" style="min-height: 80px;" placeholder="Langkah-langkah kerja..."></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Kuota</label>
+                    <input type="number" id="taskQuota" class="input-style" value="" placeholder="100">
+                </div>
+                <div class="form-group">
+                    <label>Reward/Member</label>
+                    <input type="number" id="taskReward" class="input-style" value="" placeholder="100">
+                </div>
+            </div>
+
+            <div class="cost-summary">
+                <div>
+                    <span>Total Pembayaran:</span>
+                    <small>*Termasuk pajak & biaya sistem</small>
+                </div>
+                <b id="totalCost">Rp 0</b>
+            </div>
+        </div>
+
+        <button class="btn-publish" onclick="createTask()">PUBLISH SEKARANG</button>
+    </div>
+    
+    <footer style="margin-top: 0.1px; padding: 30px 6%; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05);">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px;">
+        <div style="background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);">
+            <i class="fa-solid fa-bolt" style="color: #ffd700; margin-bottom: 10px;"></i>
+            <h5 style="margin: 0; font-size: 12px; color: white;">Cepat & Real</h5>
+            <p style="margin: 5px 0 0 0; font-size: 10px; color: var(--text-dim);">Tugas diproses oleh user asli, bukan bot atau akun palsu.</p>
+        </div>
+        <div style="background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);">
+            <i class="fa-solid fa-circle-exclamation" style="color: var(--primary); margin-bottom: 10px;"></i>
+            <h5 style="margin: 0; font-size: 12px; color: white;">Sistem Validasi</h5>
+            <p style="margin: 5px 0 0 0; font-size: 10px; color: var(--text-dim);">Admin memverifikasi setiap bukti kerja sebelum saldo Anda terpotong.</p>
+        </div>
+    </div>
+
+    <div style="background: rgba(255, 0, 0, 0.05); border: 1px solid rgba(255, 0, 0, 0.2); padding: 15px; border-radius: 15px; margin-bottom: 30px;">
+        <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #ff6b6b; font-weight: 800;">
+            <i class="fa-solid fa-triangle-exclamation"></i> LARANGAN KONTEN:
+        </h4>
+        <p style="margin: 0; font-size: 10px; color: var(--text-dim); line-height: 1.6;">
+            Dilarang mempromosikan konten judi, pornografi, penipuan, atau SARA. Iklan yang melanggar akan dihapus tanpa pengembalian dana.
+        </p>
+    </div>
+
+    <div style="text-align: center;">
+        <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
+            <a href="tos.html" style="color: var(--primary); font-size: 11px; text-decoration: none;">Aturan Iklan</a>
+            <a href="privacy.html" style="color: var(--primary); font-size: 11px; text-decoration: none;">Privasi</a>
+        </div>
+        <img src="img/logo.jpg" style="width: 35px; border-radius: 8px; margin-bottom: 10px; opacity: 0.7;">
+        <p style="font-size: 10px; color: var(--text-dim); margin: 0;">© 2025-2026 RewardSharey Ads Manager</p>
+    </div>
+
+    <div style="height: 0.1px;"></div>
+</footer>
+
+    <script type="module">
+    import { db, auth } from './js/firebase-config.js';
+    import { addDoc, collection, serverTimestamp, doc, getDoc, updateDoc, increment, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const qInp = document.getElementById('taskQuota');
+    const rInp = document.getElementById('taskReward');
+    const costDisp = document.getElementById('totalCost');
+    let currentBalance = 0;
+
+    const updateCost = () => {
+        const quota = parseInt(qInp.value) || 0;
+        const rewardPerUser = parseInt(rInp.value) || 0;
+        const pureCost = quota * rewardPerUser;
+        const totalWithFee = Math.ceil(pureCost * 1.45); 
+        costDisp.innerText = "Rp " + totalWithFee.toLocaleString();
+        return totalWithFee;
+    };
+
+    qInp.oninput = updateCost;
+    rInp.oninput = updateCost;
+
+    auth.onAuthStateChanged(async user => {
+        if (user) {
+            const depRef = collection(db, "deposits");
+            const qDep = query(depRef, where("uid", "==", user.uid), where("status", "==", "success"));
+            const querySnapshot = await getDocs(qDep);
+            
+            let everDepositedLarge = false;
+            querySnapshot.forEach((doc) => {
+                if (doc.data().amount >= 50000) everDepositedLarge = true;
+            });
+
+            if (!everDepositedLarge) {
+                document.getElementById('mainContent').innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-lock" style="font-size:48px; color:var(--primary); margin-bottom:20px;"></i><h3>Akses Terkunci</h3><p>Minimal deposit Rp 50.000 sekali untuk jadi Advertiser.</p><a href="deposit.html" class="btn-publish" style="display:block; text-decoration:none;">KE HALAMAN DEPOSIT</a></div>`;
+                return;
+            }
+
+            const uSnap = await getDoc(doc(db, "users", user.uid));
+            currentBalance = uSnap.data().balance || 0;
+            updateCost();
+        }
+    });
+
+    window.createTask = async () => {
+        const totalRequired = updateCost();
+        if (currentBalance < totalRequired) return alert("Saldo Anda tidak cukup!");
+        
+        const title = document.getElementById('taskTitle').value;
+        const link = document.getElementById('taskLink').value;
+        const desc = document.getElementById('taskDesc').value;
+
+        if(!title || !link || !desc) return alert("Isi semua data!");
+
+        if(confirm(`Kirim iklan ke antrean Admin dengan biaya ${costDisp.innerText}?`)) {
+            try {
+                // Potong saldo di awal
+                await updateDoc(doc(db, "users", auth.currentUser.uid), { balance: increment(-totalRequired) });
+                
+                // Simpan ke antrean (adv_queue), BUKAN ke tasks
+                await addDoc(collection(db, "adv_queue"), {
+                    title, link, description: desc,
+                    quota: parseInt(qInp.value),
+                    reward: parseInt(rInp.value),
+                    uid: auth.currentUser.uid,
+                    email: auth.currentUser.email,
+                    status: "pending",
+                    timestamp: serverTimestamp()
+                });
+                
+                alert("Iklan berhasil dikirim! Menunggu verifikasi admin.");
+                window.location.href = "dashboard.html";
+            } catch(e) { alert(e.message); }
+        }
+    };
+</script>
+</body>
+</html>

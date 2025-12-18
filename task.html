@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas - RewardSharey</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0b0f1a; --card: #151c2c; --primary: #4a8d88; --text-dim: #94a3b8; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: white; display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* Header Tetap di Atas */
+        .header { padding: 20px 5%; display: flex; align-items: center; gap: 15px; background: var(--card); border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 1000; }
+        .header a { color: white; text-decoration: none; width: 35px; height: 35px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+        .header h2 { margin: 0; font-size: 16px; font-weight: 800; }
+
+        /* Area Daftar Tugas */
+        .task-list { padding: 20px 5%; flex: 1; } /* flex: 1 biar footer terdorong ke bawah */
+        .task-card { 
+            background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 12px; 
+            border: 1px solid rgba(255,255,255,0.03); display: flex; align-items: center; gap: 15px;
+            text-decoration: none; color: white; transition: 0.2s;
+        }
+        .task-card:active { transform: scale(0.98); }
+        
+        .task-icon { 
+            width: 48px; height: 48px; border-radius: 12px; background: rgba(74, 141, 136, 0.1); 
+            display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--primary); 
+        }
+
+        .task-info { flex: 1; }
+        .task-info b { display: block; font-size: 14px; margin-bottom: 3px; }
+        .task-info span { font-size: 11px; color: var(--text-dim); }
+        
+        .task-price { text-align: right; }
+        .task-price b { color: #22c55e; font-size: 14px; display: block; }
+
+        /* CSS FOOTER TASK - UPGRADED */
+.footer-info { 
+    padding: 40px 5% 20px; 
+    text-align: center; 
+    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: -10px;
+    background: linear-gradient(to bottom, transparent, rgba(74, 141, 136, 0.02));
+}
+
+.footer-line-accent {
+    width: 40px;
+    height: 3px;
+    background: var(--primary);
+    margin: 0 auto 20px;
+    border-radius: 10px;
+    opacity: 0.5;
+}
+
+.footer-info i { 
+    font-size: 28px; 
+    color: var(--primary); 
+    margin-bottom: 15px; 
+    filter: drop-shadow(0 0 10px rgba(74, 141, 136, 0.3));
+}
+
+.footer-info p { 
+    font-size: 12px; 
+    color: var(--text-dim); 
+    line-height: 1.8; 
+    margin: 0 0 20px 0; 
+}
+
+.legal-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.legal-links a {
+    font-size: 11px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.legal-links .dot {
+    width: 4px;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+}
+
+.footer-info b { 
+    color: white; 
+    display: block; 
+    font-size: 10px; 
+    text-transform: uppercase; 
+    letter-spacing: 2px;
+    opacity: 0.8;
+}
+
+.server-id {
+    font-size: 9px;
+    color: rgba(255,255,255,0.2);
+    display: block;
+    margin-top: 5px;
+    font-family: monospace;
+}
+</style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="dashboard.html"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2>SEMUA TUGAS</h2>
+    </div>
+
+    <div class="task-list" id="taskList">
+        <p style="text-align:center; color:var(--text-dim); margin-top:50px;">Memuat tugas terbaru...</p>
+    </div>
+
+    <footer class="footer-info">
+    <div class="footer-line-accent"></div>
+    <i class="fa-solid fa-shield-halved"></i>
+    
+    <div class="footer-content">
+        <p>Pastikan Anda mengikuti instruksi tugas dengan jujur.<br>
+        Sistem mendeteksi bukti palsu secara otomatis.</p>
+        
+        <div class="legal-links">
+            <a href="tos.html">Syarat Kerja</a>
+            <span class="dot"></span>
+            <a href="privacy.html">Kebijakan Privasi</a>
+        </div>
+
+        <b>RewardSharey Official System</b>
+        <span class="server-id">Node: RS-TASK-PRO</span>
+    </div>
+
+    <div style="height: 2px;"></div>
+</footer>
+
+    <script type="module">
+        import { db } from './js/firebase-config.js';
+        import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        onSnapshot(collection(db, "tasks"), (snap) => {
+            const list = document.getElementById('taskList');
+            list.innerHTML = "";
+            if (snap.empty) {
+                list.innerHTML = '<p style="text-align:center; color:var(--text-dim); margin-top:50px;">Belum ada tugas tersedia.</p>';
+                return;
+            }
+            snap.forEach(doc => {
+                const t = doc.data();
+                list.innerHTML += `
+                    <a href="submit-task.html?id=${doc.id}" class="task-card">
+                        <div class="task-icon"><i class="fa-solid fa-list-check"></i></div>
+                        <div class="task-info">
+                            <b>${t.title}</b>
+                            <span>Sisa Kuota: ${t.quota || 0}</span>
+                        </div>
+                        <div class="task-price">
+                            <b>Rp ${t.reward.toLocaleString()}</b>
+                        </div>
+                    </a>`;
+            });
+        });
+    </script>
+</body>
+</html>

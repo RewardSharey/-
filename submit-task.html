@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Tugas - RewardSharey</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0b0f1a; --card: #151c2c; --primary: #4a8d88; --text-dim: #94a3b8; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: white; }
+
+        .header { padding: 20px 5%; display: flex; align-items: center; gap: 15px; background: var(--card); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .header a { color: white; text-decoration: none; width: 35px; height: 35px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+
+        .content { padding: 20px 6%; }
+        .info-box { background: #1e293b; padding: 15px; border-radius: 15px; border-left: 4px solid var(--primary); margin-bottom: 20px; }
+        .info-box h3 { margin: 0 0 5px; font-size: 15px; }
+        .info-box p { margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+
+        .btn-link { display: block; text-align: center; background: #3b82f6; color: white; text-decoration: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 13px; margin-bottom: 25px; }
+
+        .label { display: block; font-size: 12px; font-weight: 700; color: var(--text-dim); margin-bottom: 8px; margin-left: 5px; }
+        .input-field { width: 100%; padding: 15px; background: var(--card); border: 1px solid #2d3748; border-radius: 15px; color: white; box-sizing: border-box; margin-bottom: 20px; outline: none; font-family: inherit; }
+
+        .upload-area { background: var(--card); border: 2px dashed #2d3748; padding: 30px; border-radius: 20px; text-align: center; position: relative; margin-bottom: 30px; }
+        .upload-area input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+        .btn-submit { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 15px; color: white; font-weight: 800; cursor: pointer; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="task.html"><i class="fa-solid fa-arrow-left"></i></a>
+        <h2 style="margin:0; font-size:16px;">Kirim Bukti</h2>
+    </div>
+
+    <div class="content">
+        <div class="info-box">
+            <h3 id="tTitle">Memuat Detail...</h3>
+            <p id="tDesc">Silakan ikuti instruksi tugas dengan benar.</p>
+        </div>
+
+        <a href="#" id="tLink" target="_blank" class="btn-link"><i class="fa-solid fa-up-right-from-square"></i> BUKA LINK TUGAS</a>
+
+        <label class="label">KETERANGAN / NAMA AKUN</label>
+        <input type="text" id="userDetail" class="input-field" placeholder="Contoh: Akun @user atau ID: 12345">
+
+        <label class="label">UPLOAD BUKTI (SCREENSHOT)</label>
+        <div class="upload-area">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size:30px; color:var(--primary); margin-bottom:10px;"></i>
+            <p style="margin:0; font-size:12px; color:var(--text-dim);">Klik untuk pilih foto bukti</p>
+            <input type="file" id="fileProof" accept="image/*">
+        </div>
+
+        <button class="btn-submit" onclick="sendProof()">KIRIM BUKTI KERJA</button>
+    </div>
+    
+    <footer style="margin-top: 0.1px; padding: 30px 6%; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05);">
+    
+    <div style="margin-bottom: 30px;">
+        <h4 style="color: var(--primary); font-size: 13px; font-weight: 800; margin-bottom: 15px;">
+            <i class="fa-solid fa-circle-check"></i> PROSES VERIFIKASI
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                <div style="background: var(--primary); color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
+                <p style="margin: 0; font-size: 11px; color: var(--text-dim);">Admin akan memeriksa keaslian screenshot & link yang Anda kirim.</p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+                <div style="background: var(--primary); color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
+                <p style="margin: 0; font-size: 11px; color: var(--text-dim);">Saldo akan otomatis bertambah setelah tugas dinyatakan Valid.</p>
+            </div>
+        </div>
+    </div>
+
+    <div style="background: rgba(255, 68, 68, 0.1); border-left: 4px solid #ff4444; padding: 15px; border-radius: 8px; margin-bottom: 30px;">
+        <h5 style="margin: 0 0 5px 0; color: #ff4444; font-size: 12px; font-weight: 800;">PERINGATAN KERAS!</h5>
+        <p style="margin: 0; font-size: 10px; color: var(--text-dim); line-height: 1.5;">
+            Mengunggah bukti palsu, screenshot editan, atau gambar yang tidak relevan akan menyebabkan akun Anda di BANNED tanpa peringatan dan saldo hangus.
+        </p>
+    </div>
+
+    <div style="text-align: center;">
+        <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
+            <a href="tos.html" style="color: var(--primary); font-size: 11px; text-decoration: none;">Aturan Kerja</a>
+            <a href="privacy.html" style="color: var(--primary); font-size: 11px; text-decoration: none;">Privasi</a>
+        </div>
+        <img src="img/logo.jpg" style="width: 35px; border-radius: 10px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1);">
+        <p style="font-size: 10px; color: var(--text-dim); margin: 0;">© 2025-2026 RewardSharey Quality Control</p>
+    </div>
+
+    <div style="height: 0.1px;"></div>
+</footer>
+
+    <script type="module">
+    import { db, auth } from './js/firebase-config.js';
+    import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const IMGBB_API_KEY = '4a8d88aeac88b452c19e45cd77ea771d';
+    const taskId = new URLSearchParams(window.location.search).get('id');
+    let taskInfo = null;
+
+    // AMBIL DATA TUGAS (Cara Aman Boss)
+    if (taskId) {
+        const snap = await getDoc(doc(db, "tasks", taskId));
+        if (snap.exists()) {
+            taskInfo = snap.data();
+            document.getElementById('tTitle').innerText = taskInfo.title;
+            document.getElementById('tDesc').innerText = taskInfo.description;
+            document.getElementById('tLink').href = taskInfo.link;
+        }
+    }
+
+    window.sendProof = async () => {
+        const detail = document.getElementById('userDetail').value;
+        const fileInput = document.getElementById('fileProof'); // Ambil element inputnya
+        const file = fileInput.files[0]; // Ambil filenya
+
+        if (!detail) return alert("Isi keterangan tugas dulu!");
+        if (!file) return alert("Pilih screenshot bukti dulu!");
+
+        const btn = document.querySelector('.btn-submit');
+        btn.innerText = "Sedang Mengunggah...";
+        btn.disabled = true;
+
+        try {
+            // 1. UPLOAD KE IMGBB
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: 'POST',
+                body: formData
+            });
+            const resData = await response.json();
+
+            if (resData.success) {
+                // 2. SIMPAN KE FIRESTORE (Pakai data yang sudah pasti ada)
+                await addDoc(collection(db, "task_submissions"), {
+                    taskId: taskId,
+                    taskTitle: taskInfo ? taskInfo.title : "Tugas Tanpa Judul",
+                    reward: taskInfo ? taskInfo.reward : 0,
+                    uid: auth.currentUser.uid,
+                    email: auth.currentUser.email,
+                    description: detail,
+                    proofImg: resData.data.url, // URL Gambar ImgBB
+                    status: "pending",
+                    timestamp: serverTimestamp()
+                });
+
+                alert("Bukti Terkirim ke Admin!");
+                window.location.href = "dashboard.html";
+            } else {
+                alert("Gagal Upload Gambar: " + resData.error.message);
+                btn.innerText = "KIRIM BUKTI KERJA";
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert("Eror: " + e.message);
+            btn.innerText = "KIRIM BUKTI KERJA";
+            btn.disabled = false;
+        }
+    };
+</script>
+</body>
+</html>
