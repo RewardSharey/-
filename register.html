@@ -156,91 +156,92 @@
     </footer>
 
     <script type="module">
-    // Menggunakan library langsung dari CDN agar stabil
-    import { db, auth } from './js/firebase-config.js';
-    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { doc, setDoc, getDocs, collection, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDocs, collection, query, where, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 1. Ambil kode referral dari URL secara otomatis
-    const params = new URLSearchParams(window.location.search);
-    const refCode = params.get('ref');
-    const referralInput = document.getElementById('referralInput');
-
-    if(refCode && referralInput) {
-        referralInput.value = refCode;
-        referralInput.readOnly = true; 
-    }
-
-    // --- FUNGSI IDENTIFIKASI PERANGKAT (ANTI-TUYUL) ---
-    const getDeviceId = () => {
-        let id = localStorage.getItem('rs_device_token');
-        if (!id) {
-            // Buat ID unik berdasarkan sidik jari browser sederhana
-            id = 'DV-' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-            localStorage.setItem('rs_device_token', id);
-        }
-        return id;
+    const firebaseConfig = {
+        apiKey: "AIzaSyC...", // Tetap pakai config asli Boss
+        authDomain: "rewardsharey.firebaseapp.com",
+        projectId: "rewardsharey",
+        storageBucket: "rewardsharey.firebasestorage.app",
+        messagingSenderId: "1036081469533",
+        appId: "1:1036081469533:web:5d22189d0b60706509939a"
     };
 
-    // 2. Proses Pendaftaran
-    document.getElementById('registerForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const btn = e.target.querySelector('button');
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const referral = urlParams.get('ref');
+    if (referral) {
+        document.getElementById('referredBy').value = referral;
+    }
+
+    window.registerAccount = async function() {
         const name = document.getElementById('name').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const referral = referralInput.value || "None";
-        
-        const deviceId = getDeviceId();
+        const deviceId = document.getElementById('deviceId').value;
+        const btn = document.querySelector('.btn-register');
 
-        btn.innerText = "MENGECEK PERANGKAT..."; btn.disabled = true;
+        if (!name || !email || !password) return alert("Lengkapi data!");
+
+        btn.innerText = "PROSES..."; btn.disabled = true;
 
         try {
-            // --- PROTEKSI 1 DEVICE 1 AKUN ---
-            // Cek di Database apakah ID Perangkat ini sudah pernah mendaftar
-            const q = query(collection(db, "users"), where("deviceId", "==", deviceId));
-            const checkDevice = await getDocs(q);
-
-            if (!checkDevice.empty) {
-                alert("MAAF! Satu perangkat hanya diperbolehkan memiliki satu akun.");
-                btn.innerText = "KLAIM BONUS & DAFTAR"; 
-                btn.disabled = false;
-                return; // Berhenti disini, jangan buat akun
+            // Cek Device ID (1 Device 1 Akun)
+            const qDevice = query(collection(db, "users"), where("deviceId", "==", deviceId));
+            const deviceSnap = await getDocs(qDevice);
+            if (!deviceSnap.empty) {
+                alert("Perangkat ini sudah terdaftar!");
+                btn.innerText = "KLAIM BONUS & DAFTAR"; btn.disabled = false;
+                return;
             }
-            // --------------------------------
 
-            // Buat akun di Firebase Authentication
+            // Proses Auth
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Simpan data profil + Device ID ke Firestore
+            // Simpan User Baru (Bonus 5000)
             await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid,
                 name: name,
                 email: email,
-                balance: 5000, 
+                balance: 5000,
                 totalEarned: 0,
                 referralCode: "RSY-" + Math.random().toString(36).substring(2, 7).toUpperCase(),
-                referredBy: referral,
-                deviceId: deviceId, // KUNCI PERANGKAT DI SINI
+                referredBy: referral || null,
+                deviceId: deviceId,
                 status: "active",
                 isAdmin: false,
                 timestamp: serverTimestamp()
             });
 
-            alert("Pendaftaran Berhasil!");
+            // LOGIKA REWARD (Tambah Saldo Upline)
+            if (referral) {
+                const qRef = query(collection(db, "users"), where("referralCode", "==", referral));
+                const refSnap = await getDocs(qRef);
+                if (!refSnap.empty) {
+                    const uplineDoc = refSnap.docs[0];
+                    await updateDoc(doc(db, "users", uplineDoc.id), {
+                        balance: increment(1000),
+                        totalEarned: increment(1000),
+                        totalReferrals: increment(1)
+                    });
+                }
+            }
+
+            alert("Daftar Berhasil! Bonus Rp 5.000 Masuk.");
             window.location.href = "dashboard.html";
 
-        } catch (err) {
-            console.error(err);
-            let errorMsg = "Pendaftaran Gagal: " + err.message;
-            if (err.message.includes("permission")) {
-                errorMsg = "Error: Pastikan Security Rules di Firebase sudah di-Publish!";
-            }
-            alert(errorMsg);
+        } catch (error) {
+            alert("Error: " + error.message);
             btn.innerText = "KLAIM BONUS & DAFTAR"; btn.disabled = false;
         }
     };
-</script>
+    </script>
 </body>
+
 </html>
