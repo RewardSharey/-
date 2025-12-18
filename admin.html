@@ -83,7 +83,7 @@
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // 1. CEK ROLE ADMIN (Tetap)
+    // 1. CEK ROLE ADMIN (Tetap Asli)
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const uSnap = await getDoc(doc(db, "users", user.uid));
@@ -95,13 +95,13 @@
         } else { window.location.href = "login.html"; }
     });
 
-    // 2. STATISTIK REALTIME (Tetap)
+    // 2. STATISTIK REALTIME (Tetap Asli)
     onSnapshot(collection(db, "users"), s => document.getElementById('totalUsers').innerText = s.size);
     onSnapshot(query(collection(db, "withdrawals"), where("status", "==", "pending")), s => {
         document.getElementById('totalWD').innerText = s.size;
     });
 
-    // 3. FUNGSI BUKA MENU (REVISI: DETAIL REKENING WD)
+    // 3. FUNGSI BUKA MENU (REVISI: DETAIL REKENING WD MUNCUL)
     window.openMenu = async (type) => {
         const content = document.getElementById('modalContent');
         const title = document.getElementById('modalTitle');
@@ -131,22 +131,22 @@
             snap.forEach(d => {
                 const data = d.data();
                 
-                // --- REVISI: MENAMPILKAN DETAIL REKENING JIKA TYPE ADALAH WITHDRAW ---
+                // --- REVISI: MENAMPILKAN DETAIL REKENING KHUSUS WITHDRAW ---
                 let detailWD = "";
                 if(col === 'withdrawals') {
                     detailWD = `
-                        <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin:10px 0; border:1px solid rgba(74,141,136,0.3)">
-                            <p style="margin:0; font-size:13px; color:var(--primary)"><b>Detail Rekening User:</b></p>
+                        <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin:10px 0; border:1px solid var(--primary)">
+                            <p style="margin:0; font-size:13px; color:var(--primary)"><b>Info Rekening User:</b></p>
                             <p style="margin:5px 0 0; font-size:14px;">Nama: <b>${data.accountName || '-'}</b></p>
                             <p style="margin:2px 0 0; font-size:14px;">Metode: <b>${data.method || '-'}</b></p>
-                            <p style="margin:2px 0 0; font-size:14px;">Tujuan: <b style="color:#38bdf8">${data.target || '-'}</b></p>
+                            <p style="margin:2px 0 0; font-size:14px;">Tujuan/No: <b style="color:var(--accent)">${data.target || '-'}</b></p>
                         </div>
                     `;
                 }
 
                 let imgHTML = data.proofImg ? 
                     `<div style="margin:10px 0;">
-                        <p style="font-size:11px; margin-bottom:5px; color:var(--primary)">Bukti Screenshot (Klik untuk zoom):</p>
+                        <p style="font-size:11px; margin-bottom:5px; color:var(--primary)">Bukti Screenshot (Klik zoom):</p>
                         <img src="${data.proofImg}" style="width:100%; border-radius:10px; border:1px solid #333; cursor:pointer" onclick="window.open('${data.proofImg}')">
                     </div>` : "";
 
@@ -154,7 +154,7 @@
                     <div class="list-card" style="margin-bottom:15px; border-left: 4px solid var(--primary)">
                         <b>${data.email || data.taskTitle || "User"}</b>
                         <p style="font-size:12px; color:#94a3b8">${data.description || data.userDetail || ""}</p>
-                        <p>Nominal/Reward: <b>Rp ${(data.amount || data.reward || 0).toLocaleString()}</b></p>
+                        <p>Nominal: <b>Rp ${(data.amount || data.reward || 0).toLocaleString()}</b></p>
                         ${detailWD} 
                         ${imgHTML}
                         <div class="btn-row">
@@ -166,7 +166,7 @@
         }
     };
 
-    // 4. LOGIKA PROSES (REVISI: SALDO BALIK SAAT REJECT WD)
+    // 4. LOGIKA PROSES (REVISI: SALDO BALIK JIKA REJECT WD)
     window.process = async (col, id, act, uid, amt) => {
         if(!confirm("Lanjutkan tindakan?")) return;
         try {
@@ -184,7 +184,7 @@
                 }
                 await updateDoc(docRef, { status: 'success' });
             } else { 
-                // --- REVISI: BALIKIN SALDO JIKA WITHDRAW DITOLAK ---
+                // --- REVISI: JIKA WITHDRAW DITOLAK, SALDO BALIK KE USER ---
                 if(col === 'withdrawals') {
                     await updateDoc(doc(db, "users", uid), { 
                         balance: increment(Number(amt)) 
@@ -196,7 +196,7 @@
         } catch (e) { alert("Error: " + e.message); }
     };
 
-    // 5. MANAJEMEN USER (Tetap)
+    // 5. MANAJEMEN USER & BROADCAST (Tetap Asli Boss)
     window.searchU = async () => {
         const k = document.getElementById('uK').value.toLowerCase();
         const r = document.getElementById('uR');
@@ -234,8 +234,9 @@
     };
 
     window.closeMenu = () => document.getElementById('modalOverlay').style.display = 'none';
-</script>
+        </script>
 
 </body>
 
 </html>
+
