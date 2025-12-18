@@ -100,45 +100,59 @@
     </nav>
 
     <script type="module">
-        import { db, auth } from './js/firebase-config.js';
-        import { doc, onSnapshot, addDoc, collection, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { db, auth } from './js/firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { doc, getDoc, addDoc, collection, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        let currentBalance = 0;
-        auth.onAuthStateChanged(user => {
-            if(user) {
-                onSnapshot(doc(db, "users", user.uid), (s) => {
-                    if(s.exists()){
-                        currentBalance = s.data().balance || 0;
-                        document.getElementById('userBalance').innerText = "Rp " + currentBalance.toLocaleString();
-                    }
-                });
-            } else { window.location.href = "login.html"; }
-        });
+    let currentBalance = 0;
 
-        window.submitWD = async () => {
-            const amount = parseInt(document.getElementById('wdAmount').value);
-            const name = document.getElementById('wdName').value;
-            const target = document.getElementById('wdTarget').value;
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+                currentBalance = userDoc.data().balance || 0;
+                document.getElementById('userBalance').innerText = "Rp " + currentBalance.toLocaleString();
+            }
+        } else { window.location.href = "login.html"; }
+    });
+
+    window.submitWD = async () => {
+        const amount = parseInt(document.getElementById('wdAmount').value);
+        const name = document.getElementById('wdName').value;
+        const target = document.getElementById('wdTarget').value;
+        const method = document.getElementById('wdMethod').value;
+        
+        if(!name || !target || !amount) return alert("Isi semua data!");
+        if(amount < 30000) return alert("Minimal Rp 30.000");
+        if(amount > currentBalance) return alert("Saldo tidak cukup!");
+
+        const btn = document.querySelector('.btn-wd');
+        btn.innerText = "PROSES..."; btn.disabled = true;
+
+        try {
+            // 1. Potong Saldo
+            await updateDoc(doc(db, "users", auth.currentUser.uid), { balance: increment(-amount) });
             
-            if(!name || !target || !amount) return alert("Isi semua data!");
-            if(amount < 30000) return alert("Minimal Rp 30.000");
-            if(amount > currentBalance) return alert("Saldo tidak cukup!");
+            // 2. Simpan Data (Field disamakan untuk Admin)
+            await addDoc(collection(db, "withdrawals"), {
+                uid: auth.currentUser.uid,
+                email: auth.currentUser.email,
+                accountName: name,     // Nama Pemilik
+                method: method,        // DANA/GOPAY dll
+                target: target,        // Nomor Rekening/HP
+                amount: amount,
+                status: "pending",
+                timestamp: serverTimestamp()
+            });
 
-            try {
-                await updateDoc(doc(db, "users", auth.currentUser.uid), { balance: increment(-amount) });
-                await addDoc(collection(db, "withdrawals"), {
-                    uid: auth.currentUser.uid,
-                    accountName: name,
-                    method: document.getElementById('wdMethod').value,
-                    target: target,
-                    amount: amount,
-                    status: "pending",
-                    timestamp: serverTimestamp()
-                });
-                alert("Berhasil! Penarikan sedang diproses.");
-                window.location.href = "history.html";
-            } catch(e) { alert("Error: " + e.message); }
+            alert("Berhasil! Penarikan sedang diproses.");
+            window.location.href = "history.html";
+        } catch(e) { 
+            alert("Error: " + e.message); 
+            btn.innerText = "TARIK SALDO SEKARANG"; btn.disabled = false;
         }
-    </script>
+    }
+        </script>
 </body>
+
 </html>
