@@ -159,8 +159,12 @@
                     }
 
                     // Buat link pendaftaran lengkap
-                    const link = window.location.origin + "/register.html?ref=" + code;
+                    // Kode ini otomatis mendeteksi URL halaman saat ini dan mengganti 'referral.html' menjadi 'register.html'
+const currentUrl = window.location.href;
+const link = currentUrl.replace('referral.html', 'register.html') + "?ref=" + code;
 
+// Masukkan hasilnya ke kolom input agar user bisa copy
+document.getElementById('refLink').value = link;
                     // Update UI
                     document.getElementById('myCode').innerText = code;
                     document.getElementById('refLink').value = link;
@@ -219,4 +223,5 @@
         }
     </script>
 </body>
+
 </html>
