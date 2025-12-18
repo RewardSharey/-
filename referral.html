@@ -140,88 +140,63 @@
     </nav>
 
     <script type="module">
-        import { db, auth } from './js/firebase-config.js';
-        import { doc, getDoc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Fungsi inisialisasi data referral
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    // Ambil data user dari Firestore
-                    const userSnap = await getDoc(doc(db, "users", user.uid));
-                    let code = "";
-                    
-                    if (userSnap.exists()) {
-                        code = userSnap.data().referralCode || user.uid.substring(0, 6).toUpperCase();
-                    } else {
-                        code = user.uid.substring(0, 6).toUpperCase();
-                    }
+    const firebaseConfig = {
+        apiKey: "AIzaSyC...", // Tetap pakai config asli Boss
+        authDomain: "rewardsharey.firebaseapp.com",
+        projectId: "rewardsharey",
+        storageBucket: "rewardsharey.firebasestorage.app",
+        messagingSenderId: "1036081469533",
+        appId: "1:1036081469533:web:5d22189d0b60706509939a"
+    };
 
-                    // Buat link pendaftaran lengkap
-                    // Kode ini otomatis mendeteksi URL halaman saat ini dan mengganti 'referral.html' menjadi 'register.html'
-const currentUrl = window.location.href;
-const link = currentUrl.replace('referral.html', 'register.html') + "?ref=" + code;
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-// Masukkan hasilnya ke kolom input agar user bisa copy
-document.getElementById('refLink').value = link;
-                    // Update UI
-                    document.getElementById('myCode').innerText = code;
-                    document.getElementById('refLink').value = link;
-
-                    // Setup Bagikan ke WhatsApp
-                    document.getElementById('btnWA').onclick = () => {
-                        const pesan = encodeURIComponent(`Buruan join di RewardSharey! \n\nKode Referral: *${code}* \n\nDaftar di sini: ${link}`);
-                        window.open(`https://api.whatsapp.com/send?text=${pesan}`, '_blank');
-                    };
-
-                    // Realtime Statistik Referral
-                    const q = query(collection(db, "users"), where("referredBy", "==", code));
-                    onSnapshot(q, (snap) => {
-                        document.getElementById('refCount').innerText = snap.size;
-                        document.getElementById('refEarn').innerText = "Rp " + (snap.size * 1000).toLocaleString();
-                    });
-
-                } catch (err) {
-                    console.error("Error loading referral data:", err);
-                }
-            } else {
-                window.location.href = "login.html";
-            }
-        });
-
-        // Fungsi Copy Link
-        window.copyReferral = () => {
-            const copyText = document.getElementById("refLink");
-            const textToCopy = copyText.value;
-
-            if (textToCopy === "Loading...") return;
-
-            // Gunakan API Clipboard Modern
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    alert("Link Referral Berhasil Disalin! 🚀");
-                }).catch(() => fallbackCopy(textToCopy));
-            } else {
-                fallbackCopy(textToCopy);
-            }
-        };
-
-        // Fungsi Salin Cadangan (Legacy)
-        function fallbackCopy(text) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
             try {
-                document.execCommand('copy');
-                alert("Link Disalin! 🚀");
-            } catch (err) {
-                alert("Gagal copy, silakan salin manual.");
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const code = userData.referralCode || "RSY-ERROR";
+                    document.getElementById("refCodeText").innerText = code;
+                    
+                    // Link Otomatis Menyesuaikan Site (Anti 404)
+                    const currentUrl = window.location.href;
+                    const link = currentUrl.replace('referral.html', 'register.html') + "?ref=" + code;
+                    document.getElementById("refLink").value = link;
+
+                    document.getElementById("totalRef").innerText = userData.totalReferrals || 0;
+                    document.getElementById("refEarning").innerText = "Rp " + (userData.totalEarned || 0).toLocaleString();
+                }
+            } catch (error) {
+                console.error("Error:", error);
             }
-            document.body.removeChild(textArea);
+        } else {
+            window.location.href = "login.html";
         }
-    </script>
+    });
+
+    window.copyLink = function() {
+        const copyText = document.getElementById("refLink");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value);
+        alert("Link Berhasil Disalin!");
+    }
+
+    window.shareWA = function() {
+        const link = document.getElementById("refLink").value;
+        const text = encodeURIComponent("Buruan daftar di RewardSharey! Masukkan kode saya dan dapatkan bonus saldo awal: " + link);
+        window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
+</script>
 </body>
 
 </html>
+
