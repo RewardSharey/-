@@ -79,7 +79,7 @@
 
         <div class="calc-box">
             <div class="calc-row"><span>Biaya Tugas</span> <span id="baseCost">Rp 0</span></div>
-            <div class="calc-row fee-text"><span>Pajak & Fee Web (45%)</span> <span id="feeCost">Rp 0</span></div>
+            <div class="calc-row fee-text"><span>Pajak & Fee Web</span> <span id="feeCost">Rp 0</span></div>
             <div class="calc-row total-price"><span>Total Bayar</span> <span id="totalCost">Rp 0</span></div>
         </div>
 
@@ -136,7 +136,7 @@
         const reward = parseInt(rInp.value) || 0;
         const quota = parseInt(qInp.value) || 0;
         const base = reward * quota;
-        const fee = Math.ceil(base * 0.45); // PAJAK 45%
+        const fee = Math.ceil(base * 0.30); // PAJAK 45%
         const total = base + fee;
 
         document.getElementById('baseCost').innerText = "Rp " + base.toLocaleString();
@@ -200,4 +200,5 @@
     };
 </script>
 </body>
+
 </html>
