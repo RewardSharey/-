@@ -12,147 +12,92 @@
         .header { padding: 20px 5%; display: flex; align-items: center; gap: 15px; background: var(--card); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .header a { color: white; text-decoration: none; width: 35px; height: 35px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 10px; }
         .content { padding: 20px 5%; }
-        .task-detail { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
-        .task-detail h1 { margin: 0 0 10px; font-size: 20px; color: var(--primary); }
-        .task-detail p { font-size: 13px; color: #cbd5e1; line-height: 1.6; }
-        .reward-badge { display: inline-block; padding: 8px 15px; background: rgba(74, 141, 136, 0.1); color: var(--primary); border-radius: 10px; font-size: 13px; font-weight: 700; margin-bottom: 15px; }
-        
-        /* Link & Caption Style */
-        .btn-link { display: none; width: 100%; padding: 15px; background: #1e293b; border: 1px solid var(--primary); border-radius: 15px; color: white; text-decoration: none; text-align: center; font-weight: 800; font-size: 13px; margin: 15px 0; box-sizing: border-box; }
-        .caption-container { display: none; background: rgba(255,255,255,0.03); border: 1px dashed #334155; padding: 15px; border-radius: 15px; margin-top: 15px; }
-        .btn-copy { background: var(--accent); border: none; color: #000; padding: 8px 15px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; margin-top: 10px; }
-
-        .upload-box { background: var(--card); border: 2px dashed #2d3748; padding: 40px 20px; border-radius: 24px; text-align: center; cursor: pointer; transition: 0.3s; }
-        .btn-submit { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 16px; color: white; font-weight: 800; font-size: 14px; cursor: pointer; margin-top: 20px; }
-        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-        textarea { width: 100%; background: var(--card); border: 1px solid #2d3748; border-radius: 15px; padding: 15px; color: white; margin-top: 15px; font-family: inherit; box-sizing: border-box; }
+        .task-detail { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
+        .reward-badge { display: inline-block; padding: 6px 12px; background: rgba(74, 141, 136, 0.1); color: var(--primary); border-radius: 8px; font-size: 12px; font-weight: 800; margin-bottom: 15px; }
+        .btn-link { display: none; width: 100%; padding: 15px; background: #1e293b; border: 1px solid var(--primary); border-radius: 12px; color: white; text-decoration: none; text-align: center; font-weight: 800; font-size: 13px; margin: 15px 0; box-sizing: border-box; }
+        .caption-box { display: none; background: rgba(255,255,255,0.03); border: 1px dashed #334155; padding: 15px; border-radius: 12px; margin-top: 15px; }
+        .upload-area { background: var(--card); border: 2px dashed #2d3748; padding: 30px; border-radius: 20px; text-align: center; cursor: pointer; }
+        .btn-submit { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 15px; color: white; font-weight: 800; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <a href="task.html"><i class="fa-solid fa-arrow-left"></i></a>
-        <h2 style="margin:0; font-size:16px;">Konfirmasi Tugas</h2>
+        <h2 style="margin:0; font-size:16px;">Konfirmasi Bukti</h2>
     </div>
 
     <div class="content">
         <div class="task-detail">
-            <span class="reward-badge" id="tReward">Loading...</span>
-            <h1 id="tTitle">Memuat Tugas...</h1>
-            <p id="tDesc"></p>
-
-            <a href="#" id="btnTarget" class="btn-link" target="_blank"><i class="fa-solid fa-external-link"></i> BUKA LINK TUJUAN</a>
-            <div class="caption-container" id="captionBox">
-                <small style="color:var(--accent); font-weight:800;">SALIN CAPTION INI:</small>
-                <div id="tCaption" style="font-size:13px; margin-top:5px;"></div>
-                <button class="btn-copy" onclick="copyText()">SALIN TEKS</button>
+            <span class="reward-badge" id="tReward">...</span>
+            <h1 id="tTitle" style="margin:0; font-size:18px;">Memuat...</h1>
+            <p id="tDesc" style="font-size:13px; color:#94a3b8; margin-top:10px;"></p>
+            
+            <a href="#" id="btnTarget" class="btn-link" target="_blank">BUKA LINK TUGAS</a>
+            <div class="caption-box" id="capArea">
+                <small style="color:var(--accent); font-weight:800;">SALIN CAPTION:</small>
+                <p id="tCaption" style="font-size:12px; margin:8px 0;"></p>
+                <button onclick="copyCap()" style="background:var(--accent); border:none; padding:5px 10px; border-radius:5px; font-size:10px; font-weight:800;">SALIN TEKS</button>
             </div>
         </div>
 
-        <div class="upload-area">
-            <label style="font-size:11px; font-weight:700; color:var(--text-dim); display:block; margin-bottom:10px;">UNGGAH BUKTI SCREENSHOT</label>
-            <div class="upload-box" onclick="document.getElementById('fileInput').click()">
-                <i class="fa-solid fa-cloud-arrow-up" style="font-size:30px; color:var(--primary); margin-bottom:10px;"></i>
-                <p id="fileName" style="margin:0; font-size:12px; color:var(--text-dim);">Klik untuk pilih gambar</p>
-                <input type="file" id="fileInput" hidden accept="image/*">
-            </div>
-            <textarea id="taskNote" placeholder="Catatan tambahan (opsional)"></textarea>
-            <button class="btn-submit" id="btnSubmit" onclick="submitWork()">KIRIM BUKTI KERJA</button>
+        <div class="upload-area" onclick="document.getElementById('fInp').click()">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size:30px; color:var(--primary); margin-bottom:10px;"></i>
+            <p id="fName" style="margin:0; font-size:12px; color:#64748b;">Pilih Screenshot Bukti</p>
+            <input type="file" id="fInp" hidden accept="image/*">
         </div>
+
+        <button class="btn-submit" id="btnSub" onclick="kirimBukti()">KIRIM BUKTI</button>
     </div>
 
 <script type="module">
     import { db, auth } from './js/firebase-config.js';
-    import { doc, getDoc, addDoc, collection, serverTimestamp, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const IMGBB_API_KEY = "6798e1e7960751996113b2c933939a2d";
-    const urlParams = new URLSearchParams(window.location.search);
-    const taskId = urlParams.get('id');
-    let taskData = null; // Variabel ini yang kita pakai
+    // API KEY ASLI BOSS SUDAH DITEMPEL
+    const API_IMGBB = "4a8d88aeac88b452c19e45cd77ea771d";
+    const tId = new URLSearchParams(window.location.search).get('id');
+    let taskData = null;
 
     onAuthStateChanged(auth, async (user) => {
-        if (!user) { window.location.href = "login.html"; return; }
-        if (!taskId) { window.location.href = "task.html"; return; }
-
-        const tDoc = await getDoc(doc(db, "tasks", taskId));
-        if (tDoc.exists()) {
-            taskData = tDoc.data();
-            
-            // Cek jika user sudah pernah kirim (untuk task limit 'once')
-            if (taskData.limitType === 'once') {
-                const checkSub = await getDocs(query(collection(db, "task_submissions"), where("taskId", "==", taskId), where("uid", "==", user.uid)));
-                if (!checkSub.empty) {
-                    alert("Tugas ini sudah kamu kerjakan!");
-                    window.location.href = "task.html";
-                    return;
-                }
-            }
-
-            document.getElementById('tTitle').innerText = taskData.title;
-            document.getElementById('tDesc').innerText = taskData.description;
-            document.getElementById('tReward').innerText = "Rp " + taskData.reward.toLocaleString();
-
-            // Tampilkan Link & Caption jika ada
-            if(taskData.link) {
-                document.getElementById('btnTarget').href = taskData.link;
-                document.getElementById('btnTarget').style.display = "block";
-            }
-            if(taskData.caption) {
-                document.getElementById('captionBox').style.display = "block";
-                document.getElementById('tCaption').innerText = taskData.caption;
+        if(!user) window.location.href="login.html";
+        if(tId) {
+            const s = await getDoc(doc(db, "tasks", tId));
+            if(s.exists()){
+                taskData = s.data();
+                document.getElementById('tTitle').innerText = taskData.title;
+                document.getElementById('tDesc').innerText = taskData.description;
+                document.getElementById('tReward').innerText = "Rp " + taskData.reward.toLocaleString();
+                if(taskData.link) { document.getElementById('btnTarget').href = taskData.link; document.getElementById('btnTarget').style.display = "block"; }
+                if(taskData.caption) { document.getElementById('capArea').style.display = "block"; document.getElementById('tCaption').innerText = taskData.caption; }
             }
         }
     });
 
-    window.copyText = () => {
-        const txt = document.getElementById('tCaption').innerText;
-        navigator.clipboard.writeText(txt).then(() => alert("Berhasil disalin!"));
-    };
+    window.copyCap = () => { navigator.clipboard.writeText(document.getElementById('tCaption').innerText); alert("Disalin!"); };
+    document.getElementById('fInp').onchange = function() { if(this.files[0]) document.getElementById('fName').innerText = this.files[0].name; };
 
-    document.getElementById('fileInput').onchange = function() {
-        if(this.files[0]) document.getElementById('fileName').innerText = this.files[0].name;
-    };
-
-    window.submitWork = async () => {
-        const file = document.getElementById('fileInput').files[0];
-        const btn = document.getElementById('btnSubmit');
-        
-        if(!file) return alert("Pilih bukti gambar!");
-        if(!taskData) return alert("Data tugas belum siap!");
-
-        btn.innerText = "SEDANG MENGIRIM..."; btn.disabled = true;
+    window.kirimBukti = async () => {
+        const file = document.getElementById('fInp').files[0];
+        if(!file || !taskData) return alert("Pilih foto!");
+        const b = document.getElementById('btnSub');
+        b.innerText = "MENGIRIM..."; b.disabled = true;
 
         try {
-            // 1. UPLOAD KE IMGBB
-            const formData = new FormData();
-            formData.append('image', file);
-            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
-            const data = await res.json();
+            const fd = new FormData(); fd.append('image', file);
+            const r = await fetch(`https://api.imgbb.com/1/upload?key=${API_IMGBB}`, { method:'POST', body:fd });
+            const d = await r.json();
 
-            if (data.success) {
-                // 2. SIMPAN KE FIRESTORE (Gunakan taskData yang benar)
+            if(d.success) {
                 await addDoc(collection(db, "task_submissions"), {
-                    taskId: taskId,
-                    taskTitle: taskData.title, // SUDAH FIXED: Bukan taskInfo lagi
-                    reward: taskData.reward,
-                    uid: auth.currentUser.uid,
-                    email: auth.currentUser.email,
-                    proofImg: data.data.url,
-                    note: document.getElementById('taskNote').value,
-                    status: "pending",
-                    timestamp: serverTimestamp()
+                    taskId: tId, taskTitle: taskData.title, reward: Number(taskData.reward),
+                    uid: auth.currentUser.uid, email: auth.currentUser.email,
+                    proofImg: d.data.url, status: "pending", timestamp: serverTimestamp()
                 });
-                alert("Berhasil terkirim! Menunggu verifikasi admin.");
-                window.location.href = "task.html";
-            } else {
-                throw new Error("Gagal upload gambar ke server.");
+                alert("Berhasil!"); window.location.href="dashboard.html";
             }
-        } catch (e) { 
-            alert(e.message); 
-            btn.innerText = "KIRIM BUKTI KERJA"; 
-            btn.disabled = false; 
-        }
+        } catch(e) { alert(e.message); b.disabled = false; b.innerText="KIRIM BUKTI"; }
     };
 </script>
 </body>
