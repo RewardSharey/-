@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Admin - RewardSharey</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0b0f1a; --card: #151c2c; --primary: #4a8d88; --accent: #38bdf8; --danger: #ff4757; --success: #22c55e; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: white; padding-bottom: 30px; }
+        .admin-header { padding: 30px 5%; background: var(--card); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .admin-header h1 { margin: 0; font-size: 22px; color: var(--primary); font-weight: 800; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px 5%; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-card small { color: #64748b; font-size: 10px; text-transform: uppercase; }
+        .stat-card h2 { margin: 5px 0 0; font-size: 24px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 5% 20px; }
+        .menu-item { background: var(--card); padding: 22px 12px; border-radius: 22px; text-align: center; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; position: relative; }
+        .menu-item i { font-size: 24px; color: var(--primary); margin-bottom: 10px; display: block; }
+        .menu-item span { font-size: 11px; font-weight: 700; display: block; }
+        .badge-count { position: absolute; top: 10px; right: 10px; background: var(--danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: 800; }
+        
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; display: none; flex-direction: column; }
+        .overlay-header { padding: 20px 5%; display: flex; align-items: center; gap: 20px; background: var(--card); border-bottom: 1px solid #2d3748; }
+        .content-body { padding: 20px 5%; flex: 1; overflow-y: auto; }
+        .list-card { background: var(--card); padding: 18px; border-radius: 18px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .btn-row { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .btn-mini { flex: 1; min-width: 80px; padding: 12px; border-radius: 10px; border: none; font-size: 11px; font-weight: 800; cursor: pointer; color: white; }
+        input, textarea, select { width: 100%; background: var(--card); border: 1px solid #2d3748; padding: 15px; border-radius: 12px; color: white; box-sizing: border-box; font-family: inherit; margin-bottom: 10px; outline: none; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-header">
+        <h1>MASTER CONTROL</h1>
+        <p id="adminName" style="font-size: 12px; color: #64748b; margin-top: 5px;">Memuat...</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><small>Total Users</small><h2 id="totalUsers">0</h2></div>
+        <div class="stat-card"><small>Pending WD</small><h2 id="totalWD" style="color: #f59e0b;">0</h2></div>
+    </div>
+
+    <div class="menu-grid">
+        <div class="menu-item" onclick="openMenu('adv_queue')">
+            <i class="fa-solid fa-rectangle-ad" style="color:var(--accent)"></i>
+            <span>Verifikasi Iklan</span>
+            <div id="advBadge" class="badge-count" style="display:none">0</div>
+        </div>
+        
+        <div class="menu-item" onclick="openMenu('submissions')">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Verifikasi Task</span>
+        </div>
+
+        <div class="menu-item" onclick="openMenu('withdraws')">
+            <i class="fa-solid fa-money-bill-transfer" style="color:var(--danger)"></i>
+            <span>Withdraw</span>
+        </div>
+
+        <div class="menu-item" onclick="openMenu('deposits')">
+            <i class="fa-solid fa-file-invoice-dollar" style="color:var(--success)"></i>
+            <span>Deposit</span>
+        </div>
+
+        <div class="menu-item" onclick="openMenu('create-manual')">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>Buat Task Admin</span>
+        </div>
+
+        <div class="menu-item" onclick="openMenu('users')">
+            <i class="fa-solid fa-users-gear"></i>
+            <span>Kelola User</span>
+        </div>
+
+        <div class="menu-item" onclick="openMenu('broadcast')" style="grid-column: span 2;">
+            <i class="fa-solid fa-bullhorn" style="color:var(--accent)"></i>
+            <span>Broadcast Notifikasi</span>
+        </div>
+    </div>
+
+    <div id="modalOverlay" class="overlay">
+        <div class="overlay-header">
+            <button onclick="closeMenu()" style="background:none; border:none; color:white; font-size:20px;"><i class="fa-solid fa-arrow-left"></i></button>
+            <h3 id="modalTitle" style="margin:0; font-size:16px;">Menu</h3>
+        </div>
+        <div class="content-body" id="modalContent"></div>
+    </div>
+
+<script type="module">
+    import { db, auth } from './js/firebase-config.js';
+    import { collection, query, where, onSnapshot, doc, getDoc, getDocs, updateDoc, addDoc, deleteDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const uSnap = await getDoc(doc(db, "users", user.uid));
+            if (uSnap.exists() && uSnap.data().isAdmin === true) {
+                document.getElementById('adminName').innerText = "Logged as: " + (uSnap.data().name || "Admin");
+            } else { alert("Akses Ditolak!"); window.location.href = "dashboard.html"; }
+        } else { window.location.href = "login.html"; }
+    });
+
+    // Badge Realtime
+    onSnapshot(collection(db, "users"), s => document.getElementById('totalUsers').innerText = s.size);
+    onSnapshot(query(collection(db, "withdrawals"), where("status", "==", "pending")), s => document.getElementById('totalWD').innerText = s.size);
+    onSnapshot(query(collection(db, "adv_queue"), where("status", "==", "pending")), s => {
+        const b = document.getElementById('advBadge');
+        b.innerText = s.size; b.style.display = s.size > 0 ? 'block' : 'none';
+    });
+
+    window.openMenu = async (type) => {
+        const content = document.getElementById('modalContent');
+        const title = document.getElementById('modalTitle');
+        document.getElementById('modalOverlay').style.display = 'flex';
+        content.innerHTML = "<center style='margin-top:50px'>Memuat data...</center>";
+
+        if (type === 'create-manual') {
+            title.innerText = "Buat Task Baru (Admin)";
+            content.innerHTML = `
+                <input id="tTitle" placeholder="Judul Task">
+                <textarea id="tDesc" rows="3" placeholder="Deskripsi/Langkah"></textarea>
+                <input id="tReward" type="number" placeholder="Reward per User (Rp)">
+                <input id="tQuota" type="number" placeholder="Kuota (Jumlah Orang)">
+                <select id="tLimit">
+                    <option value="once">Sekali per User</option>
+                    <option value="unlimited">Unlimited (Bebas)</option>
+                </select>
+                <button onclick="saveTaskAdmin()" class="btn-mini" style="background:var(--primary); width:100%; height:50px">POST TASK KE PUBLIK</button>
+            `;
+        } else if (type === 'adv_queue') {
+            title.innerText = "Antrean Iklan Advertiser";
+            const snap = await getDocs(query(collection(db, "adv_queue"), where("status", "==", "pending")));
+            if (snap.empty) { content.innerHTML = "<center>Tidak ada iklan masuk.</center>"; return; }
+            content.innerHTML = "";
+            snap.forEach(d => {
+                const data = d.data();
+                const totalBiaya = data.reward * data.quota;
+                content.innerHTML += `
+                    <div class="list-card">
+                        <small style="color:var(--accent)">ADVERTISER: ${data.email}</small>
+                        <h3 style="margin:10px 0 5px">${data.title}</h3>
+                        <p style="font-size:12px; color:#94a3b8">${data.description}</p>
+                        <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; font-size:12px">
+                            Reward: <b>Rp ${data.reward.toLocaleString()}</b> | Kuota: <b>${data.quota}</b><br>
+                            Total Bayar: <b style="color:var(--success)">Rp ${totalBiaya.toLocaleString()}</b>
+                        </div>
+                        <div class="btn-row">
+                            <button class="btn-mini" style="background:var(--danger)" onclick="processAdv('${d.id}', 'reject', '${data.uid}', ${totalBiaya})">TOLAK & REFUND</button>
+                            <button class="btn-mini" style="background:var(--success)" onclick="processAdv('${d.id}', 'acc')">APPROVE & PUBLISH</button>
+                        </div>
+                    </div>`;
+            });
+        } else if (type === 'users') {
+            title.innerText = "Kelola User";
+            content.innerHTML = `<div style="display:flex; gap:10px"><input id="uK" placeholder="Cari Nama/Email"><button onclick="searchU()" class="btn-mini" style="background:var(--primary); flex:0.3">CARI</button></div><div id="uR" style="margin-top:20px"></div>`;
+        } else if (type === 'broadcast') {
+            title.innerText = "Kirim Broadcast";
+            content.innerHTML = `<input id="bcT" placeholder="Judul"><textarea id="bcM" rows="4" placeholder="Pesan"></textarea><button onclick="sendBC()" class="btn-mini" style="background:var(--primary); width:100%; height:50px">KIRIM KE SEMUA USER</button>`;
+        } else {
+            let col = type === 'deposits' ? 'deposits' : type === 'withdraws' ? 'withdrawals' : 'task_submissions';
+            title.innerText = "Verifikasi " + type.toUpperCase();
+            const snap = await getDocs(query(collection(db, col), where("status", "==", "pending")));
+            if (snap.empty) { content.innerHTML = "<center>Antrean bersih.</center>"; return; }
+            content.innerHTML = "";
+            snap.forEach(d => {
+                const data = d.data();
+                let imgHTML = data.proofImg ? `<img src="${data.proofImg}" style="width:100%; border-radius:10px; margin:10px 0;" onclick="window.open('${data.proofImg}')">` : "";
+                content.innerHTML += `<div class="list-card"><b>${data.email}</b><p>Nominal/Reward: <b>Rp ${(data.amount || data.reward).toLocaleString()}</b></p>${imgHTML}
+                    <div class="btn-row">
+                        <button class="btn-mini" style="background:var(--danger)" onclick="processGeneral('${col}','${d.id}','reject','${data.uid}',${data.amount || data.reward})">TOLAK</button>
+                        <button class="btn-mini" style="background:var(--success)" onclick="processGeneral('${col}','${d.id}','acc','${data.uid}',${data.amount || data.reward})">APPROVE</button>
+                    </div></div>`;
+            });
+        }
+    };
+
+    // LOGIKA KHUSUS ADVERTISER (APPROVE/REJECT)
+    window.processAdv = async (id, act, uid, refundAmt) => {
+        if(!confirm("Lanjutkan tindakan ini?")) return;
+        try {
+            const advRef = doc(db, "adv_queue", id);
+            const advSnap = await getDoc(advRef);
+            const data = advSnap.data();
+
+            if (act === 'acc') {
+                // 1. Pindahkan ke koleksi 'tasks' agar muncul di dashboard
+                await addDoc(collection(db, "tasks"), {
+                    title: data.title,
+                    description: data.description,
+                    reward: data.reward,
+                    quota: data.quota,
+                    limitType: "once", // Standar iklan user biasanya sekali pengerjaan
+                    status: "active",
+                    timestamp: serverTimestamp()
+                });
+                // 2. Tandai sukses di antrean
+                await updateDoc(advRef, { status: "success" });
+            } else {
+                // 1. Kembalikan saldo advertiser
+                await updateDoc(doc(db, "users", uid), { balance: increment(refundAmt) });
+                // 2. Tandai ditolak
+                await updateDoc(advRef, { status: "rejected" });
+            }
+            alert("Selesai!"); closeMenu();
+        } catch(e) { alert(e.message); }
+    };
+
+    window.saveTaskAdmin = async () => {
+        const title = document.getElementById('tTitle').value;
+        const desc = document.getElementById('tDesc').value;
+        const reward = document.getElementById('tReward').value;
+        const quota = document.getElementById('tQuota').value;
+        const limit = document.getElementById('tLimit').value;
+        if(!title || !reward) return alert("Isi minimal judul & reward!");
+        await addDoc(collection(db, "tasks"), {
+            title, description: desc, reward: Number(reward), quota: Number(quota),
+            limitType: limit, status: 'active', timestamp: serverTimestamp()
+        });
+        alert("Task Admin Dipublikasikan!"); closeMenu();
+    };
+
+    window.processGeneral = async (col, id, act, uid, amt) => {
+        if(!confirm("Konfirmasi proses?")) return;
+        try {
+            if(act === 'acc') {
+                if(col === 'deposits' || col === 'task_submissions') {
+                    await updateDoc(doc(db, "users", uid), { balance: increment(Number(amt)) });
+                }
+                await updateDoc(doc(db, col, id), { status: 'success' });
+            } else {
+                if(col === 'withdrawals') { await updateDoc(doc(db, "users", uid), { balance: increment(Number(amt)) }); }
+                await updateDoc(doc(db, col, id), { status: 'rejected' });
+            }
+            alert("Berhasil!"); closeMenu();
+        } catch (e) { alert(e.message); }
+    };
+
+    window.searchU = async () => {
+        const k = document.getElementById('uK').value.toLowerCase();
+        const r = document.getElementById('uR'); r.innerHTML = "Mencari...";
+        const snap = await getDocs(collection(db, "users"));
+        r.innerHTML = "";
+        snap.forEach(d => {
+            const u = d.data();
+            if(u.email?.includes(k) || u.name?.toLowerCase().includes(k)) {
+                const isB = u.status === 'banned';
+                r.innerHTML += `<div class="list-card">
+                    <b>${u.name}</b><br><small>${u.email}</small>
+                    <p>Saldo: <b>Rp ${u.balance.toLocaleString()}</b></p>
+                    <input type="number" id="amt_${d.id}" placeholder="Nominal (+/-)">
+                    <div class="btn-row">
+                        <button class="btn-mini" style="background:var(--primary)" onclick="adjBal('${d.id}')">UPDATE SALDO</button>
+                        <button class="btn-mini" style="background:var(--danger)" onclick="toggleBan('${d.id}', ${isB})">${isB ? 'Unban' : 'Ban'}</button>
+                    </div>
+                </div>`;
+            }
+        });
+    };
+
+    window.adjBal = async (uid) => {
+        const amt = document.getElementById('amt_' + uid).value;
+        if(!amt) return alert("Isi saldo!");
+        await updateDoc(doc(db, "users", uid), { balance: increment(Number(amt)) });
+        alert("Selesai!"); searchU();
+    };
+
+    window.toggleBan = async (uid, isB) => { await updateDoc(doc(db, "users", uid), { status: isB ? 'active' : 'banned' }); searchU(); };
+    window.sendBC = async () => {
+        const t = document.getElementById('bcT').value; const m = document.getElementById('bcM').value;
+        await addDoc(collection(db, "notifications"), { title: t, message: m, timestamp: serverTimestamp() });
+        alert("Broadcast Terkirim!"); closeMenu();
+    };
+    window.closeMenu = () => document.getElementById('modalOverlay').style.display = 'none';
+</script>
+</body>
+</html>
