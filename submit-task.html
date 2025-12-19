@@ -9,34 +9,23 @@
     <style>
         :root { --bg: #0b0f1a; --card: #151c2c; --primary: #4a8d88; --text-dim: #94a3b8; --accent: #38bdf8; }
         body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: white; padding-bottom: 50px; }
-        
         .header { padding: 20px 5%; display: flex; align-items: center; gap: 15px; background: var(--card); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .header a { color: white; text-decoration: none; width: 35px; height: 35px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 10px; }
-        
         .content { padding: 20px 5%; }
         .task-detail { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
         .task-detail h1 { margin: 0 0 10px; font-size: 20px; color: var(--primary); }
         .task-detail p { font-size: 13px; color: #cbd5e1; line-height: 1.6; }
-        
         .reward-badge { display: inline-block; padding: 8px 15px; background: rgba(74, 141, 136, 0.1); color: var(--primary); border-radius: 10px; font-size: 13px; font-weight: 700; margin-bottom: 15px; }
-
-        /* Style Tombol Link & Box Caption */
-        .btn-link { display: none; width: 100%; padding: 15px; background: #1e293b; border: 1px solid var(--primary); border-radius: 15px; color: white; text-decoration: none; text-align: center; font-weight: 800; font-size: 13px; margin: 15px 0; box-sizing: border-box; }
-        .btn-link i { margin-right: 8px; }
-
-        .caption-container { display: none; background: rgba(255,255,255,0.03); border: 1px dashed #334155; padding: 15px; border-radius: 15px; margin-top: 15px; }
-        .caption-container small { color: var(--accent); font-weight: 800; font-size: 10px; display: block; margin-bottom: 8px; }
-        .caption-text { font-size: 13px; color: white; margin-bottom: 12px; line-height: 1.4; }
-        .btn-copy { background: var(--accent); border: none; color: #000; padding: 8px 15px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
-
-        .upload-area { margin-top: 25px; }
-        .upload-box { background: var(--card); border: 2px dashed #2d3748; padding: 40px 20px; border-radius: 24px; text-align: center; cursor: pointer; transition: 0.3s; }
-        .upload-box:hover { border-color: var(--primary); background: rgba(74,141,136,0.05); }
         
+        /* Link & Caption Style */
+        .btn-link { display: none; width: 100%; padding: 15px; background: #1e293b; border: 1px solid var(--primary); border-radius: 15px; color: white; text-decoration: none; text-align: center; font-weight: 800; font-size: 13px; margin: 15px 0; box-sizing: border-box; }
+        .caption-container { display: none; background: rgba(255,255,255,0.03); border: 1px dashed #334155; padding: 15px; border-radius: 15px; margin-top: 15px; }
+        .btn-copy { background: var(--accent); border: none; color: #000; padding: 8px 15px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; margin-top: 10px; }
+
+        .upload-box { background: var(--card); border: 2px dashed #2d3748; padding: 40px 20px; border-radius: 24px; text-align: center; cursor: pointer; transition: 0.3s; }
         .btn-submit { width: 100%; padding: 18px; background: var(--primary); border: none; border-radius: 16px; color: white; font-weight: 800; font-size: 14px; cursor: pointer; margin-top: 20px; }
         .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        textarea { width: 100%; background: var(--card); border: 1px solid #2d3748; border-radius: 15px; padding: 15px; color: white; margin-top: 15px; font-family: inherit; box-sizing: border-box; outline: none; }
+        textarea { width: 100%; background: var(--card); border: 1px solid #2d3748; border-radius: 15px; padding: 15px; color: white; margin-top: 15px; font-family: inherit; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -52,19 +41,16 @@
             <h1 id="tTitle">Memuat Tugas...</h1>
             <p id="tDesc"></p>
 
-            <a href="#" id="btnTarget" class="btn-link" target="_blank">
-                <i class="fa-solid fa-up-right-from-square"></i> BUKA LINK TUJUAN
-            </a>
-
+            <a href="#" id="btnTarget" class="btn-link" target="_blank"><i class="fa-solid fa-external-link"></i> BUKA LINK TUJUAN</a>
             <div class="caption-container" id="captionBox">
-                <small>SALIN TEKS DI BAWAH INI:</small>
-                <div class="caption-text" id="tCaption"></div>
-                <button class="btn-copy" onclick="copyText()"><i class="fa-solid fa-copy"></i> SALIN CAPTION</button>
+                <small style="color:var(--accent); font-weight:800;">SALIN CAPTION INI:</small>
+                <div id="tCaption" style="font-size:13px; margin-top:5px;"></div>
+                <button class="btn-copy" onclick="copyText()">SALIN TEKS</button>
             </div>
         </div>
 
         <div class="upload-area">
-            <label style="font-size:12px; font-weight:700; color:var(--text-dim); display:block; margin-bottom:10px;">UNGGAH BUKTI (SCREENSHOT)</label>
+            <label style="font-size:11px; font-weight:700; color:var(--text-dim); display:block; margin-bottom:10px;">UNGGAH BUKTI SCREENSHOT</label>
             <div class="upload-box" onclick="document.getElementById('fileInput').click()">
                 <i class="fa-solid fa-cloud-arrow-up" style="font-size:30px; color:var(--primary); margin-bottom:10px;"></i>
                 <p id="fileName" style="margin:0; font-size:12px; color:var(--text-dim);">Klik untuk pilih gambar</p>
@@ -83,7 +69,7 @@
     const IMGBB_API_KEY = "6798e1e7960751996113b2c933939a2d";
     const urlParams = new URLSearchParams(window.location.search);
     const taskId = urlParams.get('id');
-    let taskData = null;
+    let taskData = null; // Variabel ini yang kita pakai
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "login.html"; return; }
@@ -93,11 +79,11 @@
         if (tDoc.exists()) {
             taskData = tDoc.data();
             
-            // Cek limit 'once'
+            // Cek jika user sudah pernah kirim (untuk task limit 'once')
             if (taskData.limitType === 'once') {
                 const checkSub = await getDocs(query(collection(db, "task_submissions"), where("taskId", "==", taskId), where("uid", "==", user.uid)));
                 if (!checkSub.empty) {
-                    alert("Tugas ini hanya bisa dikerjakan sekali!");
+                    alert("Tugas ini sudah kamu kerjakan!");
                     window.location.href = "task.html";
                     return;
                 }
@@ -107,15 +93,12 @@
             document.getElementById('tDesc').innerText = taskData.description;
             document.getElementById('tReward').innerText = "Rp " + taskData.reward.toLocaleString();
 
-            // Tampilkan Link jika ada
+            // Tampilkan Link & Caption jika ada
             if(taskData.link) {
-                const btnL = document.getElementById('btnTarget');
-                btnL.href = taskData.link;
-                btnL.style.display = "block";
+                document.getElementById('btnTarget').href = taskData.link;
+                document.getElementById('btnTarget').style.display = "block";
             }
-
-            // Tampilkan Caption jika ada
-            if(taskData.caption && taskData.caption.trim() !== "") {
+            if(taskData.caption) {
                 document.getElementById('captionBox').style.display = "block";
                 document.getElementById('tCaption').innerText = taskData.caption;
             }
@@ -123,10 +106,8 @@
     });
 
     window.copyText = () => {
-        const text = document.getElementById('tCaption').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Caption berhasil disalin!");
-        });
+        const txt = document.getElementById('tCaption').innerText;
+        navigator.clipboard.writeText(txt).then(() => alert("Berhasil disalin!"));
     };
 
     document.getElementById('fileInput').onchange = function() {
@@ -136,20 +117,24 @@
     window.submitWork = async () => {
         const file = document.getElementById('fileInput').files[0];
         const btn = document.getElementById('btnSubmit');
+        
         if(!file) return alert("Pilih bukti gambar!");
+        if(!taskData) return alert("Data tugas belum siap!");
 
         btn.innerText = "SEDANG MENGIRIM..."; btn.disabled = true;
 
         try {
+            // 1. UPLOAD KE IMGBB
             const formData = new FormData();
             formData.append('image', file);
             const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
             const data = await res.json();
 
             if (data.success) {
+                // 2. SIMPAN KE FIRESTORE (Gunakan taskData yang benar)
                 await addDoc(collection(db, "task_submissions"), {
                     taskId: taskId,
-                    taskTitle: taskData.title,
+                    taskTitle: taskData.title, // SUDAH FIXED: Bukan taskInfo lagi
                     reward: taskData.reward,
                     uid: auth.currentUser.uid,
                     email: auth.currentUser.email,
@@ -158,11 +143,13 @@
                     status: "pending",
                     timestamp: serverTimestamp()
                 });
-                alert("Tugas berhasil dikirim! Silakan tunggu verifikasi admin.");
+                alert("Berhasil terkirim! Menunggu verifikasi admin.");
                 window.location.href = "task.html";
+            } else {
+                throw new Error("Gagal upload gambar ke server.");
             }
         } catch (e) { 
-            alert("Terjadi kesalahan: " + e.message); 
+            alert(e.message); 
             btn.innerText = "KIRIM BUKTI KERJA"; 
             btn.disabled = false; 
         }
