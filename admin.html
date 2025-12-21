@@ -105,6 +105,7 @@
             <div>DB-V: 4.0.0</div>
         </div>
     </div>
+   
 
 <script type="module">
     import { db, auth } from './js/firebase-config.js';
@@ -121,14 +122,12 @@
         } else { window.location.href="login.html"; }
     });
 
-    // --- REALTIME MONITORING UNTUK KOTAK PRATINJAU ---
     onSnapshot(collection(db, "users"), s => document.getElementById('viewUsers').innerText = s.size);
     onSnapshot(query(collection(db, "withdrawals"), where("status", "==", "pending")), s => document.getElementById('viewWD').innerText = s.size);
     onSnapshot(query(collection(db, "deposits"), where("status", "==", "pending")), s => document.getElementById('viewDepo').innerText = s.size);
-    onSnapshot(query(collection(db, "task_submissions"), where("status", "==", "pending")), s => document.getElementById('viewTask').innerText = s.size);
-    onSnapshot(query(collection(db, "adv_queue"), where("status", "==", "pending")), s => document.getElementById('viewAdv').innerText = s.size);
+    onSnapshot(query(collection(db, "task_submissions"), where("status", "==", "pending"), where("isAdv", "==", false)), s => document.getElementById('viewTask').innerText = s.size);
+    onSnapshot(query(collection(db, "task_submissions"), where("status", "==", "pending"), where("isAdv", "==", true)), s => document.getElementById('viewAdv').innerText = s.size);
 
-    // --- FUNGSI OPEN MENU ---
     window.openMenu = async (type) => {
         currentMenu = type;
         const content = document.getElementById('modalContent');
@@ -175,18 +174,38 @@
                 </div>`);
         }
         else if (type === 'submissions' || type === 'subs_adv') {
-            title.innerText = "Bukti Kerja";
-            const col = type === 'submissions' ? "task_submissions" : "task_submissions_adv";
-            const snap = await getDocs(query(collection(db, col), where("status", "==", "pending")));
-            renderList(snap, (d, id) => `
-                <div class="list-card">
-                    <b>${d.taskTitle}</b><br><small>${d.email}</small>
-                    <img src="${d.proofImg}" style="width:100%; border-radius:12px; margin:10px 0;">
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-mini" style="background:var(--danger)" onclick="processGen('${col}','${id}','rej')">REJECT</button>
-                        <button class="btn-mini" style="background:var(--success)" onclick="processGen('${col}','${id}','acc','${d.uid}',${d.reward})">APPROVE</button>
-                    </div>
-                </div>`);
+            const isAdv = type === 'subs_adv';
+            title.innerText = isAdv ? "Verif Advister (Member)" : "Verif Tugas Official";
+            
+            // TOMBOL HAPUS SEMUA KHUSUS MENU INI
+            content.innerHTML = `
+                <div style="padding:15px; background:rgba(255,71,87,0.1); border-radius:15px; margin-bottom:20px; border:1px solid rgba(255,71,87,0.2);">
+                    <button onclick="hapusSemuaAntrean('${type}')" style="background:var(--danger); width:100%; padding:12px; border-radius:10px; border:none; color:white; font-weight:800; cursor:pointer;">
+                        <i class="fa-solid fa-trash-can"></i> HAPUS SEMUA ANTREAN PENDING
+                    </button>
+                </div>
+                <div id="listVerif">Memuat data...</div>
+            `;
+
+            const snap = await getDocs(query(collection(db, "task_submissions"), where("status", "==", "pending"), where("isAdv", "==", isAdv)));
+            const listDiv = document.getElementById('listVerif');
+            
+            if(snap.empty) { listDiv.innerHTML = "<center style='padding:20px; color:#64748b;'>Antrean Kosong</center>"; return; }
+            listDiv.innerHTML = "";
+
+            snap.forEach(docSnap => {
+                const d = docSnap.data();
+                const id = docSnap.id;
+                listDiv.innerHTML += `
+                    <div class="list-card">
+                        <b>${d.taskTitle}</b><br><small>${d.email}</small>
+                        <img src="${d.proofImg}" style="width:100%; border-radius:12px; margin:10px 0;">
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-mini" style="background:var(--danger)" onclick="processGen('task_submissions','${id}','rej')">REJECT</button>
+                            <button class="btn-mini" style="background:var(--success)" onclick="processGen('task_submissions','${id}','acc','${d.uid}',${d.reward})">APPROVE</button>
+                        </div>
+                    </div>`;
+            });
         }
         else if (type === 'manage_tasks') {
             title.innerText = "List Tugas Aktif";
@@ -211,7 +230,6 @@
         }
     };
 
-    // --- HELPER RENDER ---
     function renderList(snap, template) {
         const c = document.getElementById('modalContent');
         if(snap.empty) { c.innerHTML = "<center style='margin-top:50px; color:#444;'>Tidak ada antrian</center>"; return; }
@@ -219,8 +237,27 @@
         snap.forEach(doc => c.innerHTML += template(doc.data(), doc.id));
     }
 
-    // --- LOGIKA STAY ON PAGE ---
     const refreshModal = () => openMenu(currentMenu);
+
+    window.hapusSemuaAntrean = async (type) => {
+        const isAdv = type === 'subs_adv';
+        if(!confirm("Boss, yakin mau hapus SEMUA antrean pending " + (isAdv ? "Advister" : "Official") + " ini? Web bakal enteng lagi setelah dihapus.")) return;
+
+        try {
+            const q = query(collection(db, "task_submissions"), where("status", "==", "pending"), where("isAdv", "==", isAdv));
+            const snap = await getDocs(q);
+            if(snap.empty) return alert("Antrean sudah kosong Boss!");
+
+            alert("Sedang membersihkan... Mohon tunggu.");
+            const deletePromises = snap.docs.map(d => deleteDoc(doc(db, "task_submissions", d.id)));
+            await Promise.all(deletePromises);
+
+            alert("Berhasil! Antrean dibersihkan.");
+            refreshModal();
+        } catch(e) {
+            alert("Error: " + e.message);
+        }
+    };
 
     window.processAdv = async (id, act, uid, refund) => {
         if(!confirm("Proses iklan ini?")) return;
@@ -253,7 +290,8 @@
         await addDoc(collection(db, "tasks"), {
             title: document.getElementById('tT').value, link: document.getElementById('tL').value,
             description: document.getElementById('tD').value, reward: Number(document.getElementById('tR').value),
-            quota: Number(document.getElementById('tQ').value), status: "active", timestamp: serverTimestamp()
+            quota: Number(document.getElementById('tQ').value), status: "active", timestamp: serverTimestamp(),
+            isAdv: false // Menandai ini tugas admin
         });
         alert("Berhasil!"); closeMenu();
     };
