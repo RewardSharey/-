@@ -107,7 +107,73 @@
         <span>Pengaturan</span>
     </a>
 </div>
-    <footer style="margin-top: 0.1px; padding: 40px 6%; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
+    <section style="margin: 45px 6% 30px; padding-top: 25px; border-top: 1px solid rgba(255,255,255,0.05);">
+    
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px;">
+        <div style="width: 15px; height: 2px; background: var(--primary);"></div>
+        <span style="font-size: 10px; font-weight: 800; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase;">Platform Statistics</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(34, 197, 94, 0.1); display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-money-bill-transfer" style="color: #22c55e; font-size: 18px;"></i>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 9px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Total Penarikan</span>
+                    <b style="font-size: 17px; color: white; letter-spacing: 0.5px;">Rp 7.8jt<span style="color: #22c55e; margin-left: 2px;">+</span></b>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <span style="display: block; font-size: 9px; color: #22c55e; font-weight: 800;"><i class="fa-solid fa-caret-up"></i> 12%</span>
+                <span style="font-size: 8px; color: var(--text-dim);">Hari ini</span>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(74, 141, 136, 0.1); display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-users-viewfinder" style="color: var(--primary); font-size: 18px;"></i>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 9px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Member Aktif</span>
+                    <b style="font-size: 17px; color: white; letter-spacing: 0.5px;">13rb<span style="color: var(--primary); margin-left: 2px;">+</span></b>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <span style="display: block; font-size: 9px; color: var(--primary); font-weight: 800;"><i class="fa-solid fa-chart-line"></i> Global</span>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(99, 102, 241, 0.1); display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-list-check" style="color: #6366f1; font-size: 18px;"></i>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 9px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Task Dikerjakan</span>
+                    <b style="font-size: 17px; color: white; letter-spacing: 0.5px;">26.8rb<span style="color: #6366f1; margin-left: 2px;">+</span></b>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <span style="display: block; font-size: 9px; color: #6366f1; font-weight: 800;">LIVE</span>
+                <span style="display: inline-block; width: 6px; height: 6px; background: #6366f1; border-radius: 50%; animation: pulse 1.5s infinite;"></span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<style>
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.7; }
+}
+</style>
+    <footer style="margin-top: 20px; padding: 40px 6%; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
     
     <div style="margin-bottom: 20px;">
         <img src="img/logo.jpg" alt="Logo" style="width: 50px; height: 50px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--primary);">
