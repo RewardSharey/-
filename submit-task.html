@@ -55,11 +55,17 @@
     import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const API_IMGBB = "0e942f4184565875020b54394cc80ec4";
+    // ========== CLOUDINARY KONFIGURASI ==========
+    const CLOUDINARY_CONFIG = {
+        cloudName: "dddjueqrh",
+        uploadPreset: "bukti_tugas"
+    };
+    // ===========================================
+
     const tId = new URLSearchParams(window.location.search).get('id');
     let taskData = null;
 
-    // FUNGSI KOMPRES GAMBAR (BIAR GAK LOADING TERUS)
+    // FUNGSI KOMPRES GAMBAR (TETAP ADA UNTUK KUALITAS)
     const compressImage = async (file) => {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -69,7 +75,7 @@
                 img.src = event.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; // Kecilin ke 800px biar enteng
+                    const MAX_WIDTH = 800;
                     let width = img.width;
                     let height = img.height;
                     if (width > MAX_WIDTH) {
@@ -80,7 +86,7 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7); // Kualitas 70%
+                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
                 };
             };
         });
@@ -89,11 +95,9 @@
     onAuthStateChanged(auth, async (user) => {
         if(!user) window.location.href="login.html";
         if(tId) {
-            // Kita coba cari di koleksi 'tasks' (Official)
             let s = await getDoc(doc(db, "tasks", tId));
             let isAdv = false;
 
-            // Kalau gak ada di 'tasks', cari di 'adv_queue' (Punya Member)
             if(!s.exists()) {
                 s = await getDoc(doc(db, "adv_queue", tId));
                 isAdv = true;
@@ -101,12 +105,18 @@
 
             if(s.exists()){
                 taskData = s.data();
-                taskData.isAdv = isAdv; // Simpan status apakah ini tugas member atau bukan
+                taskData.isAdv = isAdv;
                 document.getElementById('tTitle').innerText = taskData.title;
                 document.getElementById('tDesc').innerText = taskData.description;
                 document.getElementById('tReward').innerText = "Rp " + taskData.reward.toLocaleString();
-                if(taskData.link) { document.getElementById('btnTarget').href = taskData.link; document.getElementById('btnTarget').style.display = "block"; }
-                if(taskData.caption) { document.getElementById('capArea').style.display = "block"; document.getElementById('tCaption').innerText = taskData.caption; }
+                if(taskData.link) { 
+                    document.getElementById('btnTarget').href = taskData.link; 
+                    document.getElementById('btnTarget').style.display = "block"; 
+                }
+                if(taskData.caption) { 
+                    document.getElementById('capArea').style.display = "block"; 
+                    document.getElementById('tCaption').innerText = taskData.caption; 
+                }
             } else {
                 alert("Tugas tidak ditemukan atau sudah dihapus!");
                 window.location.href="task.html";
@@ -114,52 +124,75 @@
         }
     });
 
-    window.copyCap = () => { navigator.clipboard.writeText(document.getElementById('tCaption').innerText); alert("Disalin!"); };
-    document.getElementById('fInp').onchange = function() { if(this.files[0]) document.getElementById('fName').innerText = this.files[0].name; };
+    window.copyCap = () => { 
+        navigator.clipboard.writeText(document.getElementById('tCaption').innerText); 
+        alert("Disalin!"); 
+    };
+    
+    document.getElementById('fInp').onchange = function() { 
+        if(this.files[0]) document.getElementById('fName').innerText = this.files[0].name; 
+    };
 
+    // ========== FUNGSI UPLOAD KE CLOUDINARY ==========
     window.kirimBukti = async () => {
         const file = document.getElementById('fInp').files[0];
         if(!file || !taskData) return alert("Pilih foto!");
+        
         const b = document.getElementById('btnSub');
-        b.innerText = "MENGOMPRES & MENGIRIM..."; 
+        b.innerText = "MENGUPLOAD KE CLOUDINARY...";
         b.disabled = true;
 
         try {
-            // 1. Kompres gambar dulu sebelum upload
+            // 1. Kompres gambar dulu (biar hemat bandwidth)
             const compressedBlob = await compressImage(file);
             
-            // 2. Upload ke ImgBB
-            const fd = new FormData(); 
-            fd.append('image', compressedBlob);
+            // 2. Upload ke Cloudinary dengan folder
+            const formData = new FormData();
+            formData.append('file', compressedBlob);
+            formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
+            formData.append('folder', 'task_submissions'); // Folder yang kamu mau
+            formData.append('tags', 'bukti_tugas,user_upload'); // Tag untuk organizasi
             
-            const r = await fetch(`https://api.imgbb.com/1/upload?key=${API_IMGBB}`, { method:'POST', body:fd });
-            const d = await r.json();
-
-            if(d.success) {
-                // 3. Simpan ke Firestore dengan Field isAdv
-                await addDoc(collection(db, "task_submissions"), {
-                    taskId: tId, 
-                    taskTitle: taskData.title, 
-                    reward: Number(taskData.reward),
-                    uid: auth.currentUser.uid, 
-                    email: auth.currentUser.email,
-                    proofImg: d.data.url, 
-                    status: "pending", 
-                    isAdv: taskData.isAdv || false, // INI KUNCINYA AGAR MUNCUL DI ADMIN
-                    timestamp: serverTimestamp()
-                });
-                alert("Berhasil Terkirim!"); 
-                window.location.href="dashboard.html";
-            } else {
-                throw new Error("Gagal upload gambar ke server.");
+            const response = await fetch(
+                `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`,
+                {
+                    method: 'POST',
+                    body: formData
+                }
+            );
+            
+            const result = await response.json();
+            
+            if (result.error) {
+                throw new Error(`Cloudinary: ${result.error.message}`);
             }
+            
+            // 3. Simpan ke Firestore (SAMA PERSIS seperti sebelumnya)
+            await addDoc(collection(db, "task_submissions"), {
+                taskId: tId, 
+                taskTitle: taskData.title, 
+                reward: Number(taskData.reward),
+                uid: auth.currentUser.uid, 
+                email: auth.currentUser.email,
+                proofImg: result.secure_url,  // URL dari Cloudinary
+                status: "pending", 
+                isAdv: taskData.isAdv || false,
+                timestamp: serverTimestamp(),
+                uploadService: "cloudinary" // Tambah field biar tau pake apa
+            });
+            
+            alert("✅ Berhasil Terkirim ke Cloudinary!");
+            window.location.href="dashboard.html";
+            
         } catch(e) { 
-            alert("Error: " + e.message); 
+            console.error("Error upload:", e);
+            alert("❌ Gagal upload: " + e.message);
             b.disabled = false; 
             b.innerText="KIRIM BUKTI"; 
         }
     };
-</script>
+        </script>
 </body>
 </html>
+
 
