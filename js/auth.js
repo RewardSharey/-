@@ -56,8 +56,8 @@ export const authSystem = {
 
                     // Pengundang dapet Rp 1.000
                     await updateDoc(inviterRef, {
-                        balance: increment(1000),
-                        referralEarnings: increment(1000),
+                        balance: increment(500),
+                        referralEarnings: increment(500),
                         totalReferrals: increment(1)
                     });
                 }
