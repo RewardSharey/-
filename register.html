@@ -235,8 +235,8 @@
                     const uplineDoc = refSnap.docs[0];
                     // Tambah saldo pengajak Rp 1.000 dan update statistik
                     await updateDoc(doc(db, "users", uplineDoc.id), {
-                        balance: increment(1000),
-                        totalEarned: increment(1000)
+                        balance: increment(500),
+                        totalEarned: increment(500)
                     });
                 }
             }
@@ -254,4 +254,5 @@
 </body>
 
 </html>
+
 
