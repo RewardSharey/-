@@ -79,8 +79,8 @@
         <div style="background: rgba(74, 141, 136, 0.1); border: 1px dashed var(--primary); padding: 15px; border-radius: 15px; text-align: left; margin-bottom: 20px;">
             <h4 style="margin: 0 0 10px 0; font-size: 13px; color: var(--primary);"><i class="fa-solid fa-clock"></i> SYARAT PENARIKAN</h4>
             <p style="margin: 0; font-size: 11px; color: var(--text-dim); line-height: 1.5;">
-                • Akun minimal sudah terdaftar selama 3 hari.<br>
-                • Minimal menyelesaikan 3 tugas yang telah disetujui (Approved).<br>
+                • Akun minimal sudah terdaftar selama 5 hari.<br>
+                • Minimal menyelesaikan 10 tugas yang telah disetujui (Approved).<br>
                 • Penarikan diproses pukul 09.00 - 21.00 WIB.
             </p>
         </div>
@@ -152,16 +152,16 @@
             // Cek 3 Hari
             const regDate = userData.timestamp ? userData.timestamp.toDate() : new Date();
             const diffDays = Math.ceil(Math.abs(new Date() - regDate) / (1000 * 60 * 60 * 24)); 
-            if (diffDays < 3) {
+            if (diffDays < 5) {
                 btn.innerText = "KONFIRMASI PENARIKAN"; btn.disabled = false;
-                return notify("Minimal akun berumur 3 hari!", "error");
+                return notify("Minimal akun berumur 5 hari!", "error");
             }
 
             // Cek 3 Task Approved
             const taskSnap = await getDocs(query(collection(db, "task_submissions"), where("uid", "==", auth.currentUser.uid), where("status", "==", "success")));
-            if (taskSnap.size < 3) {
+            if (taskSnap.size < 10) {
                 btn.innerText = "KONFIRMASI PENARIKAN"; btn.disabled = false;
-                return notify("Selesaikan minimal 3 tugas!", "error");
+                return notify("Selesaikan minimal 10 tugas!", "error");
             }
 
             // Proses
@@ -186,4 +186,5 @@
     }
 </script>
 </body>
+
 </html>
