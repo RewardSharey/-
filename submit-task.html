@@ -49,8 +49,7 @@
 
         <button class="btn-submit" id="btnSub" onclick="kirimBukti()">KIRIM BUKTI</button>
     </div>
-
-    <script type="module">
+<script type="module">
     import { db, auth } from './js/firebase-config.js';
     import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -62,8 +61,15 @@
 
     const tId = new URLSearchParams(window.location.search).get('id');
     let taskData = null;
+    let countdownInterval = null;
+    
+    // ========== LOCALSTORAGE SETTINGS ==========
+    const COOLDOWN_KEY = 'task_cooldown_timestamp'; // Key untuk simpan waktu
+    const COOLDOWN_MINUTES = 3; // 3 menit delay
+    const COOLDOWN_MS = COOLDOWN_MINUTES * 60 * 1000; // 3 menit dalam milidetik
+    // ===========================================
 
-    // FUNGSI KOMPRES (simplified)
+    // FUNGSI KOMPRES
     const compressImage = async (file) => {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -84,30 +90,93 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    canvas.toBlob((blob) => {
-                        console.log("✅ Kompres selesai, ukuran:", (blob.size / 1024).toFixed(2), "KB");
-                        resolve(blob);
-                    }, 'image/jpeg', 0.7);
+                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
                 };
             };
         });
     };
 
-    onAuthStateChanged(auth, async (user) => {
-        if(!user) {
-            console.log("❌ User belum login");
-            window.location.href="login.html";
-            return;
+    // FUNGSI CEK COOLDOWN
+    const checkCooldown = () => {
+        const lastSubmitTime = localStorage.getItem(COOLDOWN_KEY);
+        if (!lastSubmitTime) return { inCooldown: false, timeLeft: 0 };
+        
+        const now = Date.now();
+        const lastSubmit = parseInt(lastSubmitTime);
+        const timePassed = now - lastSubmit;
+        const timeLeft = COOLDOWN_MS - timePassed;
+        
+        if (timeLeft > 0) {
+            return { inCooldown: true, timeLeft: Math.ceil(timeLeft / 1000) }; // dalam detik
+        } else {
+            localStorage.removeItem(COOLDOWN_KEY); // Hapus jika sudah lewat
+            return { inCooldown: false, timeLeft: 0 };
         }
-        console.log("✅ User login:", user.email);
+    };
+
+    // FUNGSI SET COOLDOWN
+    const setCooldown = () => {
+        localStorage.setItem(COOLDOWN_KEY, Date.now().toString());
+    };
+
+    // FUNGSI COUNTDOWN
+    const startCountdown = (seconds) => {
+        const btn = document.getElementById('btnSub');
+        const fileInput = document.getElementById('fInp');
+        const countdownDisplay = document.getElementById('countdownDisplay');
+        
+        // Buat display countdown jika belum ada
+        if (!countdownDisplay) {
+            const display = document.createElement('div');
+            display.id = 'countdownDisplay';
+            display.style.cssText = `
+                background: #ffebee;
+                color: #c62828;
+                padding: 10px;
+                border-radius: 5px;
+                margin: 10px 0;
+                text-align: center;
+                font-weight: bold;
+                border: 1px solid #ffcdd2;
+            `;
+            btn.parentNode.insertBefore(display, btn);
+        }
+        
+        // Nonaktifkan button dan input
+        btn.disabled = true;
+        fileInput.disabled = true;
+        
+        // Update countdown setiap detik
+        const updateDisplay = () => {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            const displayText = `⏳ TUNGGU ${minutes}:${secs < 10 ? '0' : ''}${secs} LAGI SEBELUM BISA SUBMIT`;
+            
+            document.getElementById('countdownDisplay').innerHTML = displayText;
+            
+            if (seconds <= 0) {
+                clearInterval(countdownInterval);
+                document.getElementById('countdownDisplay').innerHTML = "✅ SILAKAN SUBMIT BUKTI TUGAS";
+                document.getElementById('countdownDisplay').style.background = "#e8f5e9";
+                document.getElementById('countdownDisplay').style.color = "#2e7d32";
+                btn.disabled = false;
+                fileInput.disabled = false;
+            }
+            seconds--;
+        };
+        
+        updateDisplay();
+        countdownInterval = setInterval(updateDisplay, 1000);
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+        if(!user) window.location.href="login.html";
         
         if(tId) {
-            console.log("🔍 Mencari task ID:", tId);
             let s = await getDoc(doc(db, "tasks", tId));
             let isAdv = false;
 
             if(!s.exists()) {
-                console.log("⚠️ Task tidak di 'tasks', cari di 'adv_queue'");
                 s = await getDoc(doc(db, "adv_queue", tId));
                 isAdv = true;
             }
@@ -115,9 +184,6 @@
             if(s.exists()){
                 taskData = s.data();
                 taskData.isAdv = isAdv;
-                console.log("✅ Task ditemukan:", taskData.title);
-                console.log("📊 Data task:", taskData);
-                
                 document.getElementById('tTitle').innerText = taskData.title;
                 document.getElementById('tDesc').innerText = taskData.description;
                 document.getElementById('tReward').innerText = "Rp " + taskData.reward.toLocaleString();
@@ -125,20 +191,22 @@
                 if(taskData.link) { 
                     document.getElementById('btnTarget').href = taskData.link; 
                     document.getElementById('btnTarget').style.display = "block"; 
-                    console.log("🔗 Link task:", taskData.link);
                 }
                 if(taskData.caption) { 
                     document.getElementById('capArea').style.display = "block"; 
                     document.getElementById('tCaption').innerText = taskData.caption; 
-                    console.log("📝 Caption tersedia");
+                }
+                
+                // CEK COOLDOWN SETELAH DATA LOAD
+                const cooldown = checkCooldown();
+                if (cooldown.inCooldown) {
+                    startCountdown(cooldown.timeLeft);
+                    alert(`⏳ Masih dalam cooldown ${COOLDOWN_MINUTES} menit. Tunggu ${Math.ceil(cooldown.timeLeft/60)} menit lagi.`);
                 }
             } else {
-                console.error("❌ Task tidak ditemukan");
                 alert("Tugas tidak ditemukan!");
                 window.location.href="task.html";
             }
-        } else {
-            console.error("❌ Tidak ada task ID di URL");
         }
     });
 
@@ -150,80 +218,57 @@
     document.getElementById('fInp').onchange = function() { 
         if(this.files[0]) {
             document.getElementById('fName').innerText = this.files[0].name; 
-            console.log("📁 File dipilih:", this.files[0].name, "size:", (this.files[0].size / 1024).toFixed(2), "KB");
         }
     };
 
-    // ========== FUNGSI UPLOAD ==========
+    // ========== FUNGSI UPLOAD DENGAN COOLDOWN ==========
     window.kirimBukti = async () => {
-        console.log("🚀 Fungsi kirimBukti dipanggil");
+        // CEK COOLDOWN PERTAMA KALI
+        const cooldown = checkCooldown();
+        if (cooldown.inCooldown) {
+            const minutesLeft = Math.ceil(cooldown.timeLeft / 60);
+            alert(`⏳ Masih dalam cooldown! Tunggu ${minutesLeft} menit ${cooldown.timeLeft % 60} detik lagi.`);
+            return;
+        }
+        
         const file = document.getElementById('fInp').files[0];
         
         if(!file) {
             alert("❌ Pilih foto dulu!");
-            console.error("❌ Tidak ada file yang dipilih");
             return;
         }
         
         if(!taskData) {
             alert("❌ Task data belum load!");
-            console.error("❌ Task data null");
             return;
         }
         
         const b = document.getElementById('btnSub');
         b.innerText = "MENGUPLOAD...";
         b.disabled = true;
-        console.log("🔄 Mulai proses upload...");
 
         try {
             // STEP 1: KOMPRES
-            console.log("1️⃣ Kompres gambar...");
             const compressedBlob = await compressImage(file);
             
             // STEP 2: UPLOAD KE CLOUDINARY
-            console.log("2️⃣ Upload ke Cloudinary...");
-            console.log("📤 Config:", CLOUDINARY_CONFIG);
-            console.log("📤 File size:", compressedBlob.size, "bytes");
-            
             const formData = new FormData();
             formData.append('file', compressedBlob);
             formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
             formData.append('folder', 'task_submissions');
             
-            console.log("🌐 Mengirim request ke Cloudinary...");
             const response = await fetch(
                 `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`,
-                {
-                    method: 'POST',
-                    body: formData
-                }
+                { method: 'POST', body: formData }
             );
             
-            console.log("📥 Response diterima, status:", response.status);
             const result = await response.json();
-            console.log("📊 Cloudinary response:", result);
             
             if (!response.ok || result.error) {
                 throw new Error(`Cloudinary error: ${result.error?.message || "Unknown error"}`);
             }
             
-            console.log("BERHASIL ✅ | TUNGGU ADMIN UNTUK MEMVERIFIKASI ⚠️");
-            console.log("🔗 URL gambar:", result.secure_url);
-            
             // STEP 3: SIMPAN KE FIRESTORE
-            console.log("3️⃣ Simpan ke Firestore...");
-            console.log("📝 Data yang akan disimpan:", {
-                taskId: tId,
-                taskTitle: taskData.title,
-                reward: taskData.reward,
-                uid: auth.currentUser.uid,
-                email: auth.currentUser.email,
-                proofImg: result.secure_url,
-                status: "pending",
-                isAdv: taskData.isAdv || false
-            });
-            
             const submissionRef = await addDoc(collection(db, "task_submissions"), {
                 taskId: tId, 
                 taskTitle: taskData.title, 
@@ -237,17 +282,14 @@
                 uploadService: "cloudinary"
             });
             
-            console.log("✅ Data tersimpan di Firestore!");
-            console.log("📄 Document ID:", submissionRef.id);
+            // STEP 4: SET COOLDOWN DI LOCALSTORAGE
+            setCooldown();
             
-            alert("✅ Berhasil Terkirim!");
+            alert(`✅ Berhasil Terkirim!\n⏳ Cooldown ${COOLDOWN_MINUTES} menit aktif.`);
             window.location.href = "dashboard.html";
             
         } catch(e) { 
-            console.error("❌ ERROR DETAIL:", e);
-            console.error("❌ Error message:", e.message);
-            console.error("❌ Error stack:", e.stack);
-            
+            console.error("❌ ERROR:", e);
             alert("❌ Gagal upload: " + e.message);
             b.disabled = false; 
             b.innerText = "KIRIM BUKTI"; 
@@ -256,6 +298,7 @@
 </script>
 </body>
 </html>
+
 
 
 
