@@ -204,6 +204,13 @@
         }
         else if (type === 'create') {
             title.innerText = "Tambah Tugas";
+            <div class="form-group">
+                <label>BATAS PENGERJAAN</label>
+                <select id="taskLimit">
+                    <option value="once">Sekali per User</option>
+                    <option value="unlimited">Boleh Berulang kali</option>
+                </select>
+            </div>
             content.innerHTML = `<input id="tT" placeholder="Judul"><input id="tL" placeholder="Link"><textarea id="tD" placeholder="Instruksi"></textarea><input id="tR" type="number" placeholder="Reward"><input id="tQ" type="number" placeholder="Kuota"><button onclick="saveT()" class="btn-mini" style="background:var(--primary); width:100%; height:50px;">PUBLIKASIKAN</button>`;
         }
         else if (type === 'broadcast') {
@@ -283,3 +290,4 @@
 </script>
 </body>
 </html>
+
